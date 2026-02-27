@@ -1,11 +1,28 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { calcPersonAggregate, formatCurrency } from '../utils/helpers';
 import './Sidebar.css';
 
+function getInitialTheme() {
+    try {
+        return localStorage.getItem('theme') || 'dark';
+    } catch {
+        return 'dark';
+    }
+}
+
 export default function Sidebar({ activePage, onNavigate }) {
     const { state } = useApp();
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [theme, setTheme] = useState(getInitialTheme);
+
+    // Apply theme to <html> whenever it changes
+    useEffect(() => {
+        document.documentElement.setAttribute('data-theme', theme);
+        try { localStorage.setItem('theme', theme); } catch { }
+    }, [theme]);
+
+    const toggleTheme = () => setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
 
     const totalInvested = state.people.reduce((sum, p) => {
         const { totalPrincipal } = calcPersonAggregate(p);
@@ -70,6 +87,16 @@ export default function Sidebar({ activePage, onNavigate }) {
                         <span className="sidebar-stat-label">Active People</span>
                         <span className="sidebar-stat-value">{activePeople}</span>
                     </div>
+
+                    {/* Theme Toggle */}
+                    <button
+                        className="theme-toggle-btn"
+                        onClick={toggleTheme}
+                        title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                    >
+                        <span className="theme-toggle-icon">{theme === 'dark' ? '☀️' : '🌙'}</span>
+                        <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+                    </button>
                 </div>
             </aside>
         </>
