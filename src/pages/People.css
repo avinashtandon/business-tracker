@@ -1,0 +1,116 @@
+.people-page {
+    animation: fadeInUp 0.4s ease forwards;
+}
+
+.people-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.people-header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+}
+
+.people-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.search-input-wrapper {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+    max-width: 360px;
+}
+
+.search-input-wrapper::before {
+    content: '🔍';
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.875rem;
+    pointer-events: none;
+}
+
+.search-input-wrapper .input-field {
+    width: 100%;
+    padding-left: 2.25rem;
+}
+
+.filter-select {
+    min-width: 140px;
+}
+
+.people-table-container {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.person-name-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.person-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: var(--radius-sm);
+    background: var(--gradient-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #0f1117;
+    flex-shrink: 0;
+}
+
+.person-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.person-txn-count {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.text-currency-green {
+    color: var(--accent-green);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.text-currency-amber {
+    color: var(--accent-amber);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.text-currency-red {
+    color: var(--accent-red);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 768px) {
+    .people-table-container {
+        overflow-x: auto;
+    }
+
+    .data-table {
+        min-width: 700px;
+    }
+}

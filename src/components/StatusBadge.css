@@ -1,0 +1,45 @@
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.status-received {
+    background: rgba(52, 211, 153, 0.12);
+    color: var(--accent-green);
+}
+
+.status-received .status-dot {
+    background: var(--accent-green);
+}
+
+.status-pending {
+    background: rgba(251, 191, 36, 0.12);
+    color: var(--accent-amber);
+}
+
+.status-pending .status-dot {
+    background: var(--accent-amber);
+    animation: pulse 2s infinite;
+}
+
+.status-overdue {
+    background: rgba(248, 113, 113, 0.12);
+    color: var(--accent-red);
+}
+
+.status-overdue .status-dot {
+    background: var(--accent-red);
+    animation: pulse 1.2s infinite;
+}

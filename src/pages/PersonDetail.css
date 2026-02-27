@@ -1,0 +1,335 @@
+.person-detail {
+    animation: fadeInUp 0.4s ease forwards;
+}
+
+.person-detail-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    cursor: pointer;
+    margin-bottom: 1.5rem;
+    background: none;
+    border: none;
+    font-family: var(--font-family);
+    transition: color var(--transition-fast);
+}
+
+.person-detail-back:hover {
+    color: var(--text-primary);
+}
+
+.person-detail-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.person-detail-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.person-detail-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-lg);
+    background: var(--gradient-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0f1117;
+    flex-shrink: 0;
+}
+
+.person-detail-name h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.person-detail-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.person-detail-meta span {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+}
+
+.person-detail-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+/* Aggregate metrics */
+.person-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 1rem;
+}
+
+.person-metric {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1.125rem 1.25rem;
+}
+
+.person-metric-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.375rem;
+}
+
+.person-metric-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Loan cards */
+.loan-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    transition: border-color var(--transition-fast);
+    animation: fadeInUp 0.4s ease forwards;
+}
+
+.loan-card:hover {
+    border-color: var(--border-active);
+}
+
+.loan-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.loan-card-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.loan-number {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    letter-spacing: 0.02em;
+}
+
+.loan-purpose-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.2rem 0.65rem;
+    background: rgba(251, 191, 36, 0.12);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    border-radius: 99px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #fbbf24;
+    letter-spacing: 0.01em;
+    max-width: 260px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.loan-card-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* Loan metrics row */
+.loan-metrics {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 0.875rem;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-sm);
+    margin-bottom: 0.875rem;
+}
+
+.loan-metric-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.loan-metric-label {
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.loan-metric-value {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.loan-metric-sep {
+    color: var(--text-muted);
+    font-size: 1rem;
+}
+
+/* Received banner */
+.loan-received-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 0.875rem;
+    background: rgba(52, 211, 153, 0.08);
+    border: 1px solid rgba(52, 211, 153, 0.15);
+    border-radius: var(--radius-sm);
+    font-size: 0.8125rem;
+    color: var(--accent-green);
+    margin-bottom: 0.75rem;
+}
+
+/* Transaction timeline */
+.loan-txn-section {
+    margin-top: 0.5rem;
+}
+
+.loan-txn-title {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+
+.txn-timeline {
+    position: relative;
+    padding-left: 1.5rem;
+}
+
+.txn-timeline::before {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--border-color);
+}
+
+.txn-timeline-item {
+    position: relative;
+    padding: 0.5rem 0 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.txn-timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -1.375rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent-teal);
+    border: 2px solid var(--bg-primary);
+}
+
+.txn-info {
+    flex: 1;
+}
+
+.txn-amount {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.txn-date-mode {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+    margin-top: 0.1rem;
+}
+
+.txn-note {
+    font-size: 0.775rem;
+    color: var(--accent-purple);
+    margin-top: 0.2rem;
+    font-style: italic;
+    opacity: 0.85;
+}
+
+.txn-delete {
+    width: 26px;
+    height: 26px;
+    border-radius: var(--radius-sm);
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 0.8125rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+    opacity: 0;
+}
+
+.txn-timeline-item:hover .txn-delete {
+    opacity: 1;
+}
+
+.txn-delete:hover {
+    background: rgba(248, 113, 113, 0.1);
+    color: var(--accent-red);
+}
+
+@media (max-width: 768px) {
+    .person-metrics {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .loan-metrics {
+        gap: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .person-metrics {
+        grid-template-columns: 1fr;
+    }
+
+    .loan-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
