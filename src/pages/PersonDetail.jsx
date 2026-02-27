@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/useApp';
 import {
     calcLoanTotals,
     getLoanStatus,
@@ -7,7 +7,6 @@ import {
     formatCurrency,
     formatDate,
     getDaysUntilDue,
-    PAYMENT_MODES,
 } from '../utils/helpers';
 import StatusBadge from '../components/StatusBadge';
 import Modal from '../components/Modal';
@@ -25,11 +24,13 @@ export default function PersonDetail({ personId, onNavigate }) {
     const [showAddLoanModal, setShowAddLoanModal] = useState(false);
     const [loanForm, setLoanForm] = useState({ purpose: '', interest: '', dueDate: '', duration: '2' });
 
+    const defaultMode = state.paymentModes?.[0] || 'UPI';
+
     const [addTxnLoanId, setAddTxnLoanId] = useState(null);
-    const [txnForm, setTxnForm] = useState({ date: new Date().toISOString().split('T')[0], amount: '', mode: 'UPI', note: '' });
+    const [txnForm, setTxnForm] = useState({ date: new Date().toISOString().split('T')[0], amount: '', mode: defaultMode, note: '' });
 
     const [receiveLoanId, setReceiveLoanId] = useState(null);
-    const [receiveForm, setReceiveForm] = useState({ amount: '', date: new Date().toISOString().split('T')[0], mode: 'UPI' });
+    const [receiveForm, setReceiveForm] = useState({ amount: '', date: new Date().toISOString().split('T')[0], mode: defaultMode });
 
     const [editLoanId, setEditLoanId] = useState(null);
     const [editLoanForm, setEditLoanForm] = useState({});
@@ -64,14 +65,14 @@ export default function PersonDetail({ personId, onNavigate }) {
     const handleAddTxn = () => {
         if (!txnForm.amount || Number(txnForm.amount) <= 0) return;
         addTransaction(person.id, addTxnLoanId, txnForm);
-        setTxnForm({ date: new Date().toISOString().split('T')[0], amount: '', mode: 'UPI', note: '' });
+        setTxnForm({ date: new Date().toISOString().split('T')[0], amount: '', mode: state.paymentModes?.[0] || 'UPI', note: '' });
         setAddTxnLoanId(null);
     };
 
     const handleReceive = () => {
         if (!receiveForm.amount || Number(receiveForm.amount) <= 0) return;
         markLoanReceived(person.id, receiveLoanId, Number(receiveForm.amount), receiveForm.date, receiveForm.mode);
-        setReceiveForm({ amount: '', date: new Date().toISOString().split('T')[0], mode: 'UPI' });
+        setReceiveForm({ amount: '', date: new Date().toISOString().split('T')[0], mode: state.paymentModes?.[0] || 'UPI' });
         setReceiveLoanId(null);
     };
 
@@ -175,10 +176,10 @@ export default function PersonDetail({ personId, onNavigate }) {
                             <div className="loan-card-actions">
                                 {status !== 'Received' && (
                                     <>
-                                        <button className="btn btn-sm btn-primary" onClick={() => { setAddTxnLoanId(loan.id); setTxnForm({ date: new Date().toISOString().split('T')[0], amount: '', mode: 'UPI', note: '' }); }}>
+                                        <button className="btn btn-sm btn-primary" onClick={() => { setAddTxnLoanId(loan.id); setTxnForm({ date: new Date().toISOString().split('T')[0], amount: '', mode: state.paymentModes?.[0] || 'UPI', note: '' }); }}>
                                             + Add ₹
                                         </button>
-                                        <button className="btn btn-sm btn-secondary" onClick={() => { setReceiveLoanId(loan.id); setReceiveForm({ amount: String(t.remaining), date: new Date().toISOString().split('T')[0], mode: 'UPI' }); }}>
+                                        <button className="btn btn-sm btn-secondary" onClick={() => { setReceiveLoanId(loan.id); setReceiveForm({ amount: String(t.remaining), date: new Date().toISOString().split('T')[0], mode: state.paymentModes?.[0] || 'UPI' }); }}>
                                             📥 Receive
                                         </button>
                                     </>
@@ -334,7 +335,7 @@ export default function PersonDetail({ personId, onNavigate }) {
                         <div className="input-group">
                             <label>Payment Mode</label>
                             <select className="input-field" value={txnForm.mode} onChange={(e) => setTxnForm({ ...txnForm, mode: e.target.value })}>
-                                {PAYMENT_MODES.map((m) => <option key={m}>{m}</option>)}
+                                {state.paymentModes.map((m) => <option key={m}>{m}</option>)}
                             </select>
                         </div>
                     </div>
@@ -364,7 +365,7 @@ export default function PersonDetail({ personId, onNavigate }) {
                         <div className="input-group">
                             <label>Payment Mode</label>
                             <select className="input-field" value={receiveForm.mode} onChange={(e) => setReceiveForm({ ...receiveForm, mode: e.target.value })}>
-                                {PAYMENT_MODES.map((m) => <option key={m}>{m}</option>)}
+                                {state.paymentModes.map((m) => <option key={m}>{m}</option>)}
                             </select>
                         </div>
                     </div>

@@ -1,0 +1,7 @@
+services:
+  lendtrack:
+    image: lendtrack:latest
+    container_name: lendtrack
+    restart: unless-stopped
+    ports:
+      - "3030:80"

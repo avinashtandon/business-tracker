@@ -1,17 +1,23 @@
-import { createContext, useContext, useReducer, useEffect } from 'react';
-import { generateId } from '../utils/helpers';
+import { useReducer, useEffect } from 'react';
+import { generateId, DEFAULT_PAYMENT_MODES } from '../utils/helpers';
+import { AppContext } from './useApp';
 
-const AppContext = createContext(null);
 const STORAGE_KEY = 'business-tracker-data-v2';
 
 function loadFromStorage() {
     try {
         const data = localStorage.getItem(STORAGE_KEY);
-        if (data) return JSON.parse(data);
+        if (data) {
+            const parsed = JSON.parse(data);
+            if (!parsed.paymentModes) {
+                parsed.paymentModes = [...DEFAULT_PAYMENT_MODES];
+            }
+            return parsed;
+        }
     } catch (e) {
         console.error('Failed to load data:', e);
     }
-    return { people: [] };
+    return { people: [], paymentModes: [...DEFAULT_PAYMENT_MODES] };
 }
 
 function saveToStorage(state) {
@@ -39,6 +45,15 @@ function saveToStorage(state) {
  */
 function reducer(state, action) {
     switch (action.type) {
+        case 'ADD_PAYMENT_MODE': {
+            if (state.paymentModes.includes(action.payload)) return state;
+            return { ...state, paymentModes: [...state.paymentModes, action.payload] };
+        }
+
+        case 'DELETE_PAYMENT_MODE': {
+            return { ...state, paymentModes: state.paymentModes.filter((m) => m !== action.payload) };
+        }
+
         case 'ADD_PERSON': {
             const firstLoan = {
                 id: generateId(),
@@ -213,6 +228,8 @@ export function AppProvider({ children }) {
         editPerson: (id, name) => dispatch({ type: 'EDIT_PERSON', payload: { id, name } }),
         deletePerson: (id) => dispatch({ type: 'DELETE_PERSON', payload: { id } }),
         addLoan: (personId, data) => dispatch({ type: 'ADD_LOAN', payload: { personId, ...data } }),
+        addPaymentMode: (mode) => dispatch({ type: 'ADD_PAYMENT_MODE', payload: mode }),
+        deletePaymentMode: (mode) => dispatch({ type: 'DELETE_PAYMENT_MODE', payload: mode }),
         editLoan: (personId, loanId, updates) =>
             dispatch({ type: 'EDIT_LOAN', payload: { personId, loanId, updates } }),
         deleteLoan: (personId, loanId) =>
@@ -230,10 +247,4 @@ export function AppProvider({ children }) {
             {children}
         </AppContext.Provider>
     );
-}
-
-export function useApp() {
-    const ctx = useContext(AppContext);
-    if (!ctx) throw new Error('useApp must be used within AppProvider');
-    return ctx;
 }

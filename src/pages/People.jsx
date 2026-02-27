@@ -1,11 +1,10 @@
 import { useState } from 'react';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/useApp';
 import {
     calcPersonAggregate,
     getLoanStatus,
     formatCurrency,
     formatDate,
-    PAYMENT_MODES,
 } from '../utils/helpers';
 import StatusBadge from '../components/StatusBadge';
 import Modal from '../components/Modal';

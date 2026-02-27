@@ -100,7 +100,7 @@ export function generateId() {
 /**
  * Payment mode options
  */
-export const PAYMENT_MODES = ['UPI', 'Net Banking', 'Cash', 'Cheque', 'Other'];
+export const DEFAULT_PAYMENT_MODES = ['UPI', 'Net Banking', 'Cash', 'Cheque', 'Other'];
 
 /**
  * Export all lending data as a CSV file (opens cleanly in Excel / Google Sheets).
