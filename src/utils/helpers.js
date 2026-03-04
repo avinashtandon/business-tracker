@@ -72,7 +72,7 @@ export function getLoanStatus(loan) {
  */
 export function calcPersonAggregate(person) {
     let totalPrincipal = 0;
-    let totalReturn = 0;
+    let totalToReceive = 0; // outstanding balance only (not yet paid)
     let totalReceived = 0;
     let totalProfit = 0;
     let activeLoans = 0;
@@ -81,13 +81,13 @@ export function calcPersonAggregate(person) {
         const t = calcLoanTotals(loan);
         const status = getLoanStatus(loan);
         totalPrincipal += t.totalPrincipal;
-        totalReturn += t.totalReturn;
+        totalToReceive += Math.max(0, t.remaining); // only count what's still owed
         totalReceived += t.amountReceived;
         if (status === 'Received') totalProfit += t.interest;
         if (status !== 'Received') activeLoans++;
     });
 
-    return { totalPrincipal, totalReturn, totalReceived, totalProfit, activeLoans };
+    return { totalPrincipal, totalReturn: totalToReceive, totalReceived, totalProfit, activeLoans };
 }
 
 /**
