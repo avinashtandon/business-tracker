@@ -96,19 +96,32 @@ export default function Dashboard({ onNavigate }) {
 
             {/* Overdue Alerts */}
             {overdueList.length > 0 && (
-                <div className="dashboard-section">
-                    <div className="dashboard-section-header">
-                        <h2>⚠️ Overdue Payments ({overdueList.length})</h2>
+                <div className="dashboard-section" style={{ marginTop: '0', marginBottom: '2.5rem' }}>
+                    <div className="dashboard-section-header" style={{ marginBottom: '1.25rem' }}>
+                        <h2 style={{ fontSize: '1.25rem', color: '#fca5a5', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <span style={{ fontSize: '1.1rem' }}>⚠️</span> Overdue Payments ({overdueList.length})
+                        </h2>
                     </div>
-                    <div className="overdue-alerts">
+                    <div className="overdue-alerts" style={{ gap: '0.5rem', marginBottom: '0' }}>
                         {overdueList.map((item) => (
-                            <div className="overdue-alert" key={item.id}>
-                                <div className="overdue-alert-icon">🚨</div>
-                                <div className="overdue-alert-info">
-                                    <strong>{item.personName}</strong>
-                                    <p>{formatCurrency(item.remaining)} overdue by {item.daysOverdue} day{item.daysOverdue !== 1 ? 's' : ''} (Due: {formatDate(item.dueDate)})</p>
+                            <div className="overdue-alert" key={item.id} style={{
+                                display: 'flex', alignItems: 'center', gap: '1.25rem',
+                                padding: '1.25rem 1.5rem', background: '#251b1f',
+                                border: '1px solid #3f2226', borderRadius: '12px',
+                                transition: 'all 0.2s ease', cursor: 'pointer'
+                            }}
+                                onClick={() => onNavigate('person', item.personId)}
+                                onMouseEnter={(e) => { e.currentTarget.style.background = '#2a1d22'; e.currentTarget.style.borderColor = '#4a262a'; }}
+                                onMouseLeave={(e) => { e.currentTarget.style.background = '#251b1f'; e.currentTarget.style.borderColor = '#3f2226'; }}
+                            >
+                                <div className="overdue-alert-icon" style={{ fontSize: '1.75rem', background: '#3b1c20', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', border: '1px solid #4a262a' }}>🚨</div>
+                                <div className="overdue-alert-info" style={{ flex: 1 }}>
+                                    <strong style={{ display: 'block', fontSize: '1rem', color: '#f3f4f6', marginBottom: '0.25rem' }}>{item.personName}</strong>
+                                    <p style={{ margin: 0, fontSize: '0.85rem', color: '#f87171' }}>
+                                        {formatCurrency(item.remaining)} overdue by {item.daysOverdue} day{item.daysOverdue !== 1 ? 's' : ''} <span style={{ opacity: 0.7 }}>(Due: {formatDate(item.dueDate)})</span>
+                                    </p>
                                 </div>
-                                <button className="btn btn-sm btn-secondary" onClick={() => onNavigate('person', item.personId)}>View →</button>
+                                <button className="btn btn-sm btn-secondary" style={{ background: '#2d3345', border: '1px solid #3a4259', color: '#e5e7eb', padding: '0.4rem 0.8rem' }} onClick={(e) => { e.stopPropagation(); onNavigate('person', item.personId); }}>View →</button>
                             </div>
                         ))}
                     </div>

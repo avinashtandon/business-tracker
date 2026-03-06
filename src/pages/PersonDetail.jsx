@@ -164,76 +164,70 @@ export default function PersonDetail({ personId, onNavigate }) {
                         <div className="loan-card-header">
                             <div className="loan-card-title">
                                 <span className="loan-number">Loan #{loanNumber}</span>
-                                {loan.purpose && (
-                                    <span className="loan-purpose-tag">🏷️ {loan.purpose}</span>
-                                )}
+                                <span className="loan-purpose-tag" style={{ background: '#352e22', color: '#fbbf24', border: 'none', padding: '0.2rem 0.6rem', fontSize: '0.75rem', fontWeight: 600 }}>{loan.purpose ? `🏷️ ${loan.purpose}` : '🏷️ LOAN'}</span>
                                 <StatusBadge status={status} />
                                 {daysLeft !== null && status !== 'Received' && (
-                                    <span className="loan-days" style={{ color: daysLeft < 0 ? 'var(--accent-red)' : daysLeft <= 3 ? 'var(--accent-amber)' : 'var(--text-muted)', fontSize: '0.8125rem' }}>
-                                        {daysLeft > 0 ? `⏰ ${daysLeft}d left` : daysLeft < 0 ? `🚨 ${Math.abs(daysLeft)}d overdue` : '📌 Due today'}
+                                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: daysLeft < 0 ? '#f87171' : daysLeft <= 3 ? '#fbbf24' : '#9ca3af', fontSize: '0.8rem', fontWeight: 500, background: 'rgba(248,113,113,0.1)', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
+                                        <span style={{ fontSize: '0.6rem' }}>{daysLeft < 0 ? '🚨' : daysLeft > 0 ? '⏰' : '📌'}</span> {daysLeft > 0 ? `${daysLeft}d left` : daysLeft < 0 ? `${Math.abs(daysLeft)}d overdue` : 'Due today'}
                                     </span>
                                 )}
                             </div>
-                            <div className="loan-card-actions">
+                            <div className="loan-card-actions" style={{ display: 'flex', gap: '0.5rem' }}>
                                 {status !== 'Received' && (
                                     <>
-                                        <button className="btn btn-sm btn-primary" onClick={() => { setAddTxnLoanId(loan.id); setTxnForm({ date: new Date().toISOString().split('T')[0], amount: '', mode: state.paymentModes?.[0] || 'UPI', note: '' }); }}>
+                                        <button className="btn btn-sm" style={{ background: '#a78bfa', color: '#111827', fontWeight: 600, border: 'none', padding: '0.4rem 0.8rem', borderRadius: '6px' }} onClick={() => { setAddTxnLoanId(loan.id); setTxnForm({ date: new Date().toISOString().split('T')[0], amount: '', mode: state.paymentModes?.[0] || 'UPI', note: '' }); }}>
                                             + Add ₹
                                         </button>
-                                        <button className="btn btn-sm btn-secondary" onClick={() => { setReceiveLoanId(loan.id); setReceiveForm({ amount: String(t.remaining), date: new Date().toISOString().split('T')[0], mode: state.paymentModes?.[0] || 'UPI' }); }}>
+                                        <button className="btn btn-sm btn-secondary" style={{ background: '#1f2937', color: '#e5e7eb', border: '1px solid #374151', padding: '0.4rem 0.8rem', borderRadius: '6px' }} onClick={() => { setReceiveLoanId(loan.id); setReceiveForm({ amount: String(t.remaining), date: new Date().toISOString().split('T')[0], mode: state.paymentModes?.[0] || 'UPI' }); }}>
                                             📥 Receive
                                         </button>
                                     </>
                                 )}
-                                <button className="btn btn-icon btn-secondary" onClick={() => openEditLoan(loan)} title="Edit loan">✏️</button>
+                                <button className="btn btn-icon btn-secondary" style={{ background: '#1f2937', color: '#fbbf24', border: 'none', padding: '0.4rem', borderRadius: '6px' }} onClick={() => openEditLoan(loan)} title="Edit loan">✏️</button>
                                 {loans.length > 1 && (
-                                    <button className="btn btn-icon btn-danger" onClick={() => setDeleteLoanId(loan.id)} title="Delete loan">🗑️</button>
+                                    <button className="btn btn-icon btn-secondary" style={{ background: '#3f2226', color: '#f87171', border: 'none', padding: '0.4rem', borderRadius: '6px' }} onClick={() => setDeleteLoanId(loan.id)} title="Delete loan">🗑️</button>
                                 )}
                             </div>
                         </div>
 
-                        {/* Loan Metrics */}
-                        <div className="loan-metrics">
-                            <div className="loan-metric-item">
-                                <span className="loan-metric-label">Principal</span>
-                                <span className="loan-metric-value">{formatCurrency(t.totalPrincipal)}</span>
+                        {/* Loan Metrics Vercel Style */}
+                        <div className="loan-metrics" style={{
+                            display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', padding: '1.25rem 0',
+                            borderTop: '1px solid #1f2937', borderBottom: '1px solid #1f2937', margin: '0.5rem 0 1.5rem 0',
+                            background: 'transparent', transform: 'none', boxShadow: 'none'
+                        }}>
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#9ca3af', marginBottom: '0.2rem' }}>Principal</span>
+                                <span style={{ fontSize: '0.95rem', fontWeight: 600, color: '#f3f4f6' }}>{formatCurrency(t.totalPrincipal)}</span>
                             </div>
-                            <span className="loan-metric-sep">+</span>
-                            <div className="loan-metric-item">
-                                <span className="loan-metric-label">Interest</span>
-                                <span className="loan-metric-value" style={{ color: 'var(--accent-green)' }}>{formatCurrency(t.interest)}</span>
+
+                            <span style={{ color: '#6b7280', fontSize: '0.8rem', padding: '0 0.25rem', transform: 'translateY(8px)' }}>+</span>
+
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#9ca3af', marginBottom: '0.2rem' }}>Interest</span>
+                                <span style={{ fontSize: '0.95rem', fontWeight: 600, color: '#34d399' }}>{formatCurrency(t.interest)}</span>
                             </div>
-                            <span className="loan-metric-sep">=</span>
-                            <div className="loan-metric-item">
-                                <span className="loan-metric-label">Total Return</span>
-                                <span className="loan-metric-value" style={{ color: 'var(--accent-purple)', fontWeight: 700 }}>{formatCurrency(t.totalReturn)}</span>
+
+                            <span style={{ color: '#6b7280', fontSize: '0.8rem', padding: '0 0.25rem', transform: 'translateY(8px)' }}>=</span>
+
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#9ca3af', marginBottom: '0.2rem' }}>Total Return</span>
+                                <span style={{ fontSize: '0.95rem', fontWeight: 600, color: '#a78bfa' }}>{formatCurrency(t.totalReturn)}</span>
                             </div>
-                            {t.amountReceived > 0 && (
-                                <>
-                                    <span className="loan-metric-sep">|</span>
-                                    <div className="loan-metric-item">
-                                        <span className="loan-metric-label">Received</span>
-                                        <span className="loan-metric-value" style={{ color: 'var(--accent-teal)' }}>{formatCurrency(t.amountReceived)}</span>
-                                    </div>
-                                    <div className="loan-metric-item">
-                                        <span className="loan-metric-label">Remaining</span>
-                                        <span className="loan-metric-value" style={{ color: t.remaining <= 0 ? 'var(--accent-green)' : 'var(--accent-amber)' }}>{formatCurrency(Math.max(0, t.remaining))}</span>
-                                    </div>
-                                </>
-                            )}
+
+                            <span style={{ color: '#374151', padding: '0 0.75rem', fontSize: '1.2rem', fontWeight: 300, transform: 'translateY(4px)' }}>|</span>
+
                             {loan.dueDate && (
-                                <>
-                                    <span className="loan-metric-sep">|</span>
-                                    <div className="loan-metric-item">
-                                        <span className="loan-metric-label">Due Date</span>
-                                        <span className="loan-metric-value" style={{ fontSize: '0.9rem' }}>{formatDate(loan.dueDate)}</span>
-                                    </div>
-                                </>
+                                <div style={{ display: 'flex', flexDirection: 'column', marginRight: '1rem' }}>
+                                    <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#9ca3af', marginBottom: '0.2rem' }}>Due Date</span>
+                                    <span style={{ fontSize: '0.9rem', fontWeight: 500, color: '#e5e7eb' }}>{formatDate(loan.dueDate)}</span>
+                                </div>
                             )}
+
                             {loan.duration && (
-                                <div className="loan-metric-item">
-                                    <span className="loan-metric-label">Duration</span>
-                                    <span className="loan-metric-value" style={{ fontSize: '0.9rem' }}>{loan.duration}</span>
+                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                    <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#9ca3af', marginBottom: '0.2rem' }}>Duration</span>
+                                    <span style={{ fontSize: '0.9rem', fontWeight: 500, color: '#e5e7eb' }}>{loan.duration}</span>
                                 </div>
                             )}
                         </div>

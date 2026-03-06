@@ -164,41 +164,7 @@
     flex-wrap: wrap;
 }
 
-/* Loan metrics row */
-.loan-metrics {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap;
-    padding: 0.875rem;
-    background: var(--bg-secondary);
-    border-radius: var(--radius-sm);
-    margin-bottom: 0.875rem;
-}
-
-.loan-metric-item {
-    display: flex;
-    flex-direction: column;
-    gap: 0.125rem;
-}
-
-.loan-metric-label {
-    font-size: 0.6875rem;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.loan-metric-value {
-    font-size: 0.9375rem;
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
-}
-
-.loan-metric-sep {
-    color: var(--text-muted);
-    font-size: 1rem;
-}
+/* Loan metrics row (removed, handled inline) */
 
 /* Received banner */
 .loan-received-banner {
