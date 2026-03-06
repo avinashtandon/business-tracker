@@ -4,6 +4,7 @@ import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
 import People from './pages/People';
 import PersonDetail from './pages/PersonDetail';
+import Crypto from './pages/Crypto';
 
 function AuthScreen({ onAuth }) {
   const [isLogin, setIsLogin] = useState(true);
@@ -250,6 +251,8 @@ export default function App() {
         return <People onNavigate={navigate} />;
       case 'person':
         return <PersonDetail personId={selectedPersonId} onNavigate={navigate} />;
+      case 'crypto':
+        return <Crypto />;
       default:
         return <Dashboard onNavigate={navigate} />;
     }

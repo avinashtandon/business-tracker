@@ -4,6 +4,8 @@ import { AppProvider } from './context/AppContext';
 import App from './App';
 import './index.css';
 
+import React from 'react';
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AppProvider>
