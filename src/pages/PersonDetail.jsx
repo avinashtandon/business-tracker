@@ -22,7 +22,7 @@ export default function PersonDetail({ personId, onNavigate }) {
 
     // Modals / forms state
     const [showAddLoanModal, setShowAddLoanModal] = useState(false);
-    const [loanForm, setLoanForm] = useState({ purpose: '', interest: '', dueDate: '', duration: '2' });
+    const [loanForm, setLoanForm] = useState({ purpose: '', principal: '', interest: '', dueDate: '', duration: '2', paymentMode: state.paymentModes?.[0] || 'Cash' });
 
     const defaultMode = state.paymentModes?.[0] || 'UPI';
 
@@ -54,11 +54,12 @@ export default function PersonDetail({ personId, onNavigate }) {
 
     // ── Handlers ───────────────────────────────
     const handleAddLoan = () => {
+        if (!loanForm.principal) return;
         const duration = /^\d+$/.test(loanForm.duration.trim())
             ? `${loanForm.duration.trim()} weeks`
             : loanForm.duration.trim() || '2 weeks';
-        addLoan(person.id, { ...loanForm, duration });
-        setLoanForm({ purpose: '', interest: '', dueDate: '', duration: '2' });
+        addLoan(person.id, { ...loanForm, duration, paymentMode: loanForm.paymentMode || state.paymentModes?.[0] || 'Cash' });
+        setLoanForm({ purpose: '', principal: '', interest: '', dueDate: '', duration: '2', paymentMode: state.paymentModes?.[0] || 'Cash' });
         setShowAddLoanModal(false);
     };
 
@@ -253,7 +254,7 @@ export default function PersonDetail({ personId, onNavigate }) {
                                         <div className="txn-timeline-item" key={txn.id}>
                                             <div className="txn-info">
                                                 <div className="txn-amount">{formatCurrency(txn.amount)}</div>
-                                                <div className="txn-date-mode">{formatDate(txn.date)} • {txn.mode}</div>
+                                                <div className="txn-date-mode">{formatDate(txn.date)} • {txn.mode || 'Cash'}</div>
                                                 {txn.note && (
                                                     <div className="txn-note">📝 {txn.note}</div>
                                                 )}
@@ -290,6 +291,11 @@ export default function PersonDetail({ personId, onNavigate }) {
                         <input className="input-field" type="text" placeholder="What is this loan for?" value={loanForm.purpose}
                             onChange={(e) => setLoanForm({ ...loanForm, purpose: e.target.value })} autoFocus />
                     </div>
+                    <div className="input-group" style={{ marginBottom: '1rem' }}>
+                        <label>Principal Amount (₹) *</label>
+                        <input className="input-field" type="number" placeholder="e.g. 50000" value={loanForm.principal}
+                            onChange={(e) => setLoanForm({ ...loanForm, principal: e.target.value })} />
+                    </div>
                     <div className="form-row">
                         <div className="input-group">
                             <label>Interest Amount (₹)</label>
@@ -302,10 +308,24 @@ export default function PersonDetail({ personId, onNavigate }) {
                                 onChange={(e) => setLoanForm({ ...loanForm, dueDate: e.target.value })} />
                         </div>
                     </div>
-                    <div className="input-group">
-                        <label>Duration in weeks (default: 2)</label>
-                        <input className="input-field" type="text" placeholder="e.g. 2" value={loanForm.duration}
-                            onChange={(e) => setLoanForm({ ...loanForm, duration: e.target.value })} />
+                    <div className="form-row">
+                        <div className="input-group">
+                            <label>Duration in weeks (default: 2)</label>
+                            <input className="input-field" type="text" placeholder="e.g. 2" value={loanForm.duration}
+                                onChange={(e) => setLoanForm({ ...loanForm, duration: e.target.value })} />
+                        </div>
+                        <div className="input-group">
+                            <label>Payment Mode</label>
+                            <select
+                                className="input-field"
+                                value={loanForm.paymentMode}
+                                onChange={(e) => setLoanForm({ ...loanForm, paymentMode: e.target.value })}
+                            >
+                                {state.paymentModes.map((mode) => (
+                                    <option key={mode} value={mode}>{mode}</option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
                 </Modal>
             )}

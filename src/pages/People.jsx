@@ -31,7 +31,7 @@ export default function People({ onNavigate }) {
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('All');
     const [showAddModal, setShowAddModal] = useState(false);
-    const [form, setForm] = useState({ name: '', interest: '', dueDate: '', duration: '2' });
+    const [form, setForm] = useState({ name: '', purpose: '', principal: '', interest: '', dueDate: '', duration: '2', paymentMode: state.paymentModes[0] || 'Cash' });
 
     const filtered = state.people
         .map((p) => {
@@ -47,12 +47,12 @@ export default function People({ onNavigate }) {
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     const handleAdd = () => {
-        if (!form.name.trim()) return;
+        if (!form.name.trim() || !form.principal) return;
         const duration = /^\d+$/.test(form.duration.trim())
             ? `${form.duration.trim()} weeks`
             : form.duration.trim() || '2 weeks';
-        addPerson({ ...form, duration });
-        setForm({ name: '', interest: '', dueDate: '', duration: '2' });
+        addPerson({ ...form, duration, paymentMode: form.paymentMode || state.paymentModes[0] || 'Cash' });
+        setForm({ name: '', purpose: '', principal: '', interest: '', dueDate: '', duration: '2', paymentMode: state.paymentModes[0] || 'Cash' });
         setShowAddModal(false);
     };
 
@@ -142,6 +142,16 @@ export default function People({ onNavigate }) {
                     <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
                         First loan details (you can change these and add more loans later)
                     </p>
+                    <div className="input-group">
+                        <label>Business Purpose 🏷️</label>
+                        <input className="input-field" type="text" placeholder="e.g. Shop Stock" value={form.purpose}
+                            onChange={(e) => setForm({ ...form, purpose: e.target.value })} />
+                    </div>
+                    <div className="input-group">
+                        <label>Principal Amount (₹) *</label>
+                        <input className="input-field" type="number" placeholder="e.g. 10000" value={form.principal}
+                            onChange={(e) => setForm({ ...form, principal: e.target.value })} />
+                    </div>
                     <div className="form-row">
                         <div className="input-group">
                             <label>Interest Amount (₹)</label>
@@ -154,10 +164,24 @@ export default function People({ onNavigate }) {
                                 onChange={(e) => setForm({ ...form, dueDate: e.target.value })} />
                         </div>
                     </div>
-                    <div className="input-group">
-                        <label>Duration in weeks (default: 2)</label>
-                        <input className="input-field" type="text" placeholder="e.g. 2" value={form.duration}
-                            onChange={(e) => setForm({ ...form, duration: e.target.value })} />
+                    <div className="form-row">
+                        <div className="input-group">
+                            <label>Duration in weeks (default: 2)</label>
+                            <input className="input-field" type="text" placeholder="e.g. 2" value={form.duration}
+                                onChange={(e) => setForm({ ...form, duration: e.target.value })} />
+                        </div>
+                        <div className="input-group">
+                            <label>Payment Mode</label>
+                            <select
+                                className="input-field"
+                                value={form.paymentMode}
+                                onChange={(e) => setForm({ ...form, paymentMode: e.target.value })}
+                            >
+                                {state.paymentModes.map((mode) => (
+                                    <option key={mode} value={mode}>{mode}</option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
                 </Modal>
             )}

@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useApp } from './context/useApp';
 import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
 import People from './pages/People';
@@ -8,20 +9,89 @@ function AuthScreen({ onAuth }) {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [error, setError] = useState('');
   const [shake, setShake] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email || !password || (!isLogin && !name)) {
+    if (!email || !password || (!isLogin && (!username || !firstName || !lastName))) {
       setError('Please fill in all fields.');
       setShake(true);
       setTimeout(() => setShake(false), 600);
       return;
     }
-    // Mock successful authentication
-    onAuth();
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      if (!isLogin) {
+        // Call Registration Endpoint
+        const res = await fetch('/api/v1/auth/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: email,
+            password: password,
+            username: username,
+            first_name: firstName,
+            last_name: lastName
+          }),
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+          throw new Error(data.message || data.error || 'Registration failed');
+        }
+
+        // Successfully registered! Let's authorize them
+        const userData = { email, username, ...data.data };
+        localStorage.setItem('auth_user', JSON.stringify(userData));
+        if (data.data?.access_token) {
+          localStorage.setItem('access_token', data.data.access_token);
+        }
+        onAuth(userData);
+      } else {
+        // Call Login Endpoint
+        const res = await fetch('/api/v1/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: email,
+            password: password
+          }),
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+          throw new Error(data.message || data.error || 'Login failed');
+        }
+
+        // Successfully logged in! Let's authorize them
+        const userData = { email, ...data.data };
+        localStorage.setItem('auth_user', JSON.stringify(userData));
+        if (data.data?.access_token) {
+          localStorage.setItem('access_token', data.data.access_token);
+        }
+        onAuth(userData);
+      }
+    } catch (err) {
+      setError(err.message || 'Something went wrong.');
+      setShake(true);
+      setTimeout(() => setShake(false), 600);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -34,17 +104,41 @@ function AuthScreen({ onAuth }) {
         </p>
         <form onSubmit={handleSubmit} className="auth-form">
           {!isLogin && (
-            <div className="input-group">
-              <label>Full Name</label>
-              <input
-                className="input-field"
-                type="text"
-                placeholder="John Doe"
-                value={name}
-                onChange={(e) => { setName(e.target.value); setError(''); }}
-                autoFocus={!isLogin}
-              />
-            </div>
+            <>
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <div className="input-group" style={{ flex: 1 }}>
+                  <label>First Name</label>
+                  <input
+                    className="input-field"
+                    type="text"
+                    placeholder="John"
+                    value={firstName}
+                    onChange={(e) => { setFirstName(e.target.value); setError(''); }}
+                    autoFocus={!isLogin}
+                  />
+                </div>
+                <div className="input-group" style={{ flex: 1 }}>
+                  <label>Last Name</label>
+                  <input
+                    className="input-field"
+                    type="text"
+                    placeholder="Doe"
+                    value={lastName}
+                    onChange={(e) => { setLastName(e.target.value); setError(''); }}
+                  />
+                </div>
+              </div>
+              <div className="input-group">
+                <label>Username</label>
+                <input
+                  className="input-field"
+                  type="text"
+                  placeholder="boss_guy"
+                  value={username}
+                  onChange={(e) => { setUsername(e.target.value); setError(''); }}
+                />
+              </div>
+            </>
           )}
           <div className="input-group">
             <label>Email Address</label>
@@ -68,8 +162,8 @@ function AuthScreen({ onAuth }) {
             />
           </div>
           {error && <p className="auth-error">{error}</p>}
-          <button type="submit" className="btn btn-primary auth-btn">
-            {isLogin ? 'Sign In' : 'Sign Up'}
+          <button type="submit" className="btn btn-primary auth-btn" disabled={isLoading}>
+            {isLoading ? 'Processing...' : (isLogin ? 'Sign In' : 'Sign Up')}
           </button>
         </form>
         <div className="auth-toggle">
@@ -90,12 +184,40 @@ function AuthScreen({ onAuth }) {
 }
 
 export default function App() {
-  const [unlocked, setUnlocked] = useState(false);
+  const { refreshData } = useApp();
+  const [user, setUser] = useState(null);
   const [page, setPage] = useState('dashboard');
   const [selectedPersonId, setSelectedPersonId] = useState(null);
+  const [isMounting, setIsMounting] = useState(true);
 
-  if (!unlocked) {
-    return <AuthScreen onAuth={() => setUnlocked(true)} />;
+  useEffect(() => {
+    // Try to load user from localStorage on initial render
+    const savedUser = localStorage.getItem('auth_user');
+    if (savedUser) {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (e) {
+        localStorage.removeItem('auth_user');
+      }
+    }
+    setIsMounting(false);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('auth_user');
+    localStorage.removeItem('access_token');
+    setUser(null);
+  };
+
+  if (isMounting) {
+    return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>Loading...</div>;
+  }
+
+  if (!user) {
+    return <AuthScreen onAuth={(userData) => {
+      setUser(userData || { email: 'user@example.com' });
+      refreshData();
+    }} />;
   }
 
   const navigate = (target, personId = null) => {
@@ -121,7 +243,15 @@ export default function App() {
   return (
     <>
       <Sidebar activePage={page} onNavigate={navigate} />
-      <main className="main-content">{renderPage()}</main>
+      <main className="main-content">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', gap: '1rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
+          <div style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', fontWeight: 500 }}>
+            👤 {user?.first_name || user?.username || (user?.email ? user.email.split('@')[0] : '')}
+          </div>
+          <button className="btn btn-sm btn-danger" onClick={handleLogout}>Logout</button>
+        </div>
+        {renderPage()}
+      </main>
     </>
   );
 }

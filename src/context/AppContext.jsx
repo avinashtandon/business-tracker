@@ -1,245 +1,357 @@
-import { useReducer, useEffect } from 'react';
-import { generateId, DEFAULT_PAYMENT_MODES } from '../utils/helpers';
+import { useState, useEffect } from 'react';
+import { DEFAULT_PAYMENT_MODES } from '../utils/helpers';
 import { AppContext } from './useApp';
 
-const STORAGE_KEY = 'business-tracker-data-v2';
-
-function loadFromStorage() {
-    try {
-        const data = localStorage.getItem(STORAGE_KEY);
-        if (data) {
-            const parsed = JSON.parse(data);
-            if (!parsed.paymentModes) {
-                parsed.paymentModes = [...DEFAULT_PAYMENT_MODES];
-            }
-            return parsed;
-        }
-    } catch (e) {
-        console.error('Failed to load data:', e);
-    }
-    return { people: [], paymentModes: [...DEFAULT_PAYMENT_MODES] };
-}
-
-function saveToStorage(state) {
-    try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch (e) {
-        console.error('Failed to save data:', e);
-    }
-}
-
-/**
- * Data shape:
- * people: [
- *   {
- *     id, name, createdAt,
- *     loans: [
- *       {
- *         id, purpose, interest, dueDate, duration, createdAt,
- *         transactions: [{ id, date, amount, mode }],
- *         amountReceived, dateReceived, receivedPaymentMode,
- *       }
- *     ]
- *   }
- * ]
- */
-function reducer(state, action) {
-    switch (action.type) {
-        case 'ADD_PAYMENT_MODE': {
-            if (state.paymentModes.includes(action.payload)) return state;
-            return { ...state, paymentModes: [...state.paymentModes, action.payload] };
-        }
-
-        case 'DELETE_PAYMENT_MODE': {
-            return { ...state, paymentModes: state.paymentModes.filter((m) => m !== action.payload) };
-        }
-
-        case 'ADD_PERSON': {
-            const firstLoan = {
-                id: generateId(),
-                purpose: action.payload.purpose || '',
-                interest: Number(action.payload.interest) || 0,
-                dueDate: action.payload.dueDate || '',
-                duration: action.payload.duration || '',
-                createdAt: new Date().toISOString(),
-                transactions: [],
-                amountReceived: 0,
-                dateReceived: '',
-                receivedPaymentMode: '',
-            };
-            const newPerson = {
-                id: generateId(),
-                name: action.payload.name,
-                createdAt: new Date().toISOString(),
-                loans: [firstLoan],
-            };
-            return { ...state, people: [...state.people, newPerson] };
-        }
-
-        case 'EDIT_PERSON': {
-            return {
-                ...state,
-                people: state.people.map((p) =>
-                    p.id === action.payload.id ? { ...p, name: action.payload.name } : p
-                ),
-            };
-        }
-
-        case 'DELETE_PERSON': {
-            return { ...state, people: state.people.filter((p) => p.id !== action.payload.id) };
-        }
-
-        case 'ADD_LOAN': {
-            const loan = {
-                id: generateId(),
-                purpose: action.payload.purpose || '',
-                interest: Number(action.payload.interest) || 0,
-                dueDate: action.payload.dueDate || '',
-                duration: action.payload.duration || '',
-                createdAt: new Date().toISOString(),
-                transactions: [],
-                amountReceived: 0,
-                dateReceived: '',
-                receivedPaymentMode: '',
-            };
-            return {
-                ...state,
-                people: state.people.map((p) =>
-                    p.id === action.payload.personId ? { ...p, loans: [...p.loans, loan] } : p
-                ),
-            };
-        }
-
-        case 'EDIT_LOAN': {
-            return {
-                ...state,
-                people: state.people.map((p) =>
-                    p.id === action.payload.personId
-                        ? {
-                            ...p,
-                            loans: p.loans.map((l) =>
-                                l.id === action.payload.loanId
-                                    ? { ...l, ...action.payload.updates }
-                                    : l
-                            ),
-                        }
-                        : p
-                ),
-            };
-        }
-
-        case 'DELETE_LOAN': {
-            return {
-                ...state,
-                people: state.people.map((p) =>
-                    p.id === action.payload.personId
-                        ? { ...p, loans: p.loans.filter((l) => l.id !== action.payload.loanId) }
-                        : p
-                ),
-            };
-        }
-
-        case 'ADD_TRANSACTION': {
-            const txn = {
-                id: generateId(),
-                date: action.payload.date,
-                amount: Number(action.payload.amount) || 0,
-                mode: action.payload.mode || 'UPI',
-                note: action.payload.note || '',
-            };
-            return {
-                ...state,
-                people: state.people.map((p) =>
-                    p.id === action.payload.personId
-                        ? {
-                            ...p,
-                            loans: p.loans.map((l) =>
-                                l.id === action.payload.loanId
-                                    ? { ...l, transactions: [...l.transactions, txn] }
-                                    : l
-                            ),
-                        }
-                        : p
-                ),
-            };
-        }
-
-        case 'DELETE_TRANSACTION': {
-            return {
-                ...state,
-                people: state.people.map((p) =>
-                    p.id === action.payload.personId
-                        ? {
-                            ...p,
-                            loans: p.loans.map((l) =>
-                                l.id === action.payload.loanId
-                                    ? {
-                                        ...l,
-                                        transactions: l.transactions.filter(
-                                            (t) => t.id !== action.payload.transactionId
-                                        ),
-                                    }
-                                    : l
-                            ),
-                        }
-                        : p
-                ),
-            };
-        }
-
-        case 'MARK_LOAN_RECEIVED': {
-            return {
-                ...state,
-                people: state.people.map((p) =>
-                    p.id === action.payload.personId
-                        ? {
-                            ...p,
-                            loans: p.loans.map((l) =>
-                                l.id === action.payload.loanId
-                                    ? {
-                                        ...l,
-                                        amountReceived:
-                                            (Number(l.amountReceived) || 0) + Number(action.payload.amount),
-                                        dateReceived: action.payload.date,
-                                        receivedPaymentMode: action.payload.mode,
-                                    }
-                                    : l
-                            ),
-                        }
-                        : p
-                ),
-            };
-        }
-
-        default:
-            return state;
-    }
-}
-
 export function AppProvider({ children }) {
-    const [state, dispatch] = useReducer(reducer, null, loadFromStorage);
+    const [state, setState] = useState({ people: [], paymentModes: DEFAULT_PAYMENT_MODES });
+    const [loading, setLoading] = useState(true);
+
+    const getToken = () => localStorage.getItem('access_token');
+
+    const fetchLoans = async () => {
+        const token = getToken();
+        if (!token) {
+            setLoading(false);
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/v1/loans', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const json = await res.json();
+
+            if (json.success) {
+                const loans = json.data || [];
+                const peopleMap = {};
+
+                loans.forEach(loan => {
+                    const name = loan.person_name;
+                    if (!peopleMap[name]) {
+                        peopleMap[name] = { id: name, name: name, createdAt: loan.created_at, loans: [] };
+                    }
+
+                    const allTxns = loan.transactions || [];
+                    const rxTxns = allTxns.filter(t => t.note === 'Received Payment');
+                    const amountReceived = rxTxns.reduce((sum, t) => sum + Number(t.amount), 0);
+
+                    const givenTxns = allTxns.filter(t => t.note !== 'Received Payment');
+                    const givenTxnTotal = givenTxns.reduce((sum, t) => sum + Number(t.amount), 0);
+                    const basePrin = Math.max(0, loan.principal_amount - givenTxnTotal);
+
+                    let resolvedTxns = [...givenTxns];
+                    if (basePrin > 0) {
+                        resolvedTxns.push({
+                            id: loan.id + '-base-prin',
+                            date: loan.created_at,
+                            amount: basePrin,
+                            mode: loan.payment_mode || 'Cash',
+                            note: 'Principal/Money Given'
+                        });
+                    }
+                    resolvedTxns.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+                    peopleMap[name].loans.push({
+                        id: loan.id,
+                        purpose: loan.purpose,
+                        interest: Number(loan.interest_amount) || 0,
+                        dueDate: loan.due_date ? loan.due_date.split('T')[0] : '',
+                        duration: loan.duration,
+                        createdAt: loan.created_at,
+                        amountReceived: amountReceived,
+                        dateReceived: rxTxns.length ? rxTxns[rxTxns.length - 1].date : '',
+                        receivedPaymentMode: rxTxns.length ? rxTxns[rxTxns.length - 1].mode : '',
+                        transactions: resolvedTxns
+                    });
+                });
+
+                setState(prev => ({ ...prev, people: Object.values(peopleMap) }));
+            }
+        } catch (e) {
+            console.error('Failed to fetch loans:', e);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        saveToStorage(state);
-    }, [state]);
+        fetchLoans();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const addPerson = async (data) => {
+        const token = getToken();
+        if (!token) return;
+
+        const response = await fetch('/api/v1/loans', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({
+                person_name: data.name,
+                purpose: data.purpose || 'Business Loan',
+                principal_amount: Number(data.principal) || 0,
+                interest_amount: Number(data.interest) || 0,
+                duration: data.duration || '',
+                due_date: data.dueDate ? data.dueDate.split('T')[0] : '',
+                payment_mode: data.paymentMode || 'Cash'
+            })
+        });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            alert(`Error adding person: ${err?.error?.message || err?.message || response.statusText}`);
+        } else {
+            const loanData = await response.json().catch(() => null);
+            if (loanData?.data?.id && Number(data.principal) > 0) {
+                const token2 = getToken();
+                await fetch(`/api/v1/loans/${loanData.data.id}/transactions`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token2}` },
+                    body: JSON.stringify({
+                        amount: Number(data.principal),
+                        date: new Date().toISOString().split('T')[0],
+                        mode: data.paymentMode || 'Cash',
+                        note: 'Initial Amount Given'
+                    })
+                }).catch(() => { });
+            }
+        }
+        await fetchLoans();
+    };
+
+    const addLoan = async (personId, data) => {
+        const token = getToken();
+        if (!token) return;
+
+        const response = await fetch('/api/v1/loans', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({
+                person_name: personId,
+                purpose: data.purpose || 'Business Loan',
+                principal_amount: Number(data.principal) || 0,
+                interest_amount: Number(data.interest) || 0,
+                duration: data.duration || '',
+                due_date: data.dueDate ? data.dueDate.split('T')[0] : '',
+                payment_mode: data.paymentMode || 'Cash'
+            })
+        });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            alert(`Error adding loan: ${err?.error?.message || err?.message || response.statusText}`);
+        } else {
+            const loanData = await response.json().catch(() => null);
+            if (loanData?.data?.id && Number(data.principal) > 0) {
+                const token2 = getToken();
+                await fetch(`/api/v1/loans/${loanData.data.id}/transactions`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token2}` },
+                    body: JSON.stringify({
+                        amount: Number(data.principal),
+                        date: new Date().toISOString().split('T')[0],
+                        mode: data.paymentMode || 'Cash',
+                        note: 'Initial Amount Given'
+                    })
+                }).catch(() => { });
+            }
+        }
+        await fetchLoans();
+    };
+
+    const editLoan = async (personId, loanId, updates) => {
+        const token = getToken();
+        if (!token) return;
+
+        const person = state.people.find(p => p.id === personId);
+        const loan = person?.loans.find(l => l.id === loanId);
+        const currentPrincipal = loan?.transactions?.[0]?.amount || 0;
+
+        await fetch(`/api/v1/loans/${loanId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({
+                person_name: personId,
+                purpose: updates.purpose || loan?.purpose || '',
+                principal_amount: currentPrincipal,
+                interest_amount: updates.interest !== undefined ? Number(updates.interest) : Number(loan?.interest || 0),
+                duration: updates.duration || loan?.duration || '',
+                due_date: (updates.dueDate || loan?.dueDate || '') ? (updates.dueDate || loan?.dueDate).split('T')[0] : ''
+            })
+        });
+        await fetchLoans();
+    };
+
+    const deleteLoan = async (personId, loanId) => {
+        const token = getToken();
+        if (!token) return;
+
+        await fetch(`/api/v1/loans/${loanId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        await fetchLoans();
+    };
+
+    const deletePerson = async (personId) => {
+        const token = getToken();
+        if (!token) return;
+
+        const person = state.people.find(p => p.id === personId);
+        if (person) {
+            for (const loan of person.loans) {
+                await fetch(`/api/v1/loans/${loan.id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+            }
+        }
+        await fetchLoans();
+    };
+
+    const editPerson = async (oldName, newName) => {
+        const token = getToken();
+        if (!token) return;
+
+        const person = state.people.find(p => p.id === oldName);
+        if (person) {
+            for (const loan of person.loans) {
+                const currentPrincipal = loan?.transactions?.[0]?.amount || 0;
+                await fetch(`/api/v1/loans/${loan.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({
+                        person_name: newName,
+                        purpose: loan.purpose,
+                        principal_amount: currentPrincipal,
+                        interest_amount: loan.interest,
+                        duration: loan.duration,
+                        due_date: loan.dueDate ? loan.dueDate.split('T')[0] : ''
+                    })
+                });
+            }
+        }
+        await fetchLoans();
+    };
+
+    const addTransaction = async (personId, loanId, data) => {
+        const token = getToken();
+        if (!token) return;
+
+        const person = state.people.find(p => p.id === personId);
+        const loan = person?.loans.find(l => l.id === loanId);
+        const currentPrincipal = loan?.transactions?.reduce((sum, t) => sum + Number(t.amount || 0), 0) || 0;
+        const newPrincipal = currentPrincipal + (Number(data.amount) || 0);
+
+        await fetch(`/api/v1/loans/${loanId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({
+                person_name: personId,
+                purpose: loan.purpose,
+                principal_amount: newPrincipal,
+                interest_amount: loan.interest,
+                duration: loan.duration,
+                due_date: loan.dueDate ? loan.dueDate.split('T')[0] : ''
+            })
+        });
+
+        await fetch(`/api/v1/loans/${loanId}/transactions`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({
+                amount: Number(data.amount) || 0,
+                date: data.date ? data.date.split('T')[0] : new Date().toISOString().split('T')[0],
+                mode: data.mode || 'Cash',
+                note: data.note || 'Installment'
+            })
+        });
+
+        await fetchLoans();
+    };
+
+    const deleteTransaction = async (personId, loanId, transactionId) => {
+        const token = getToken();
+        if (!token) return;
+
+        const person = state.people.find(p => p.id === personId);
+        const loan = person?.loans.find(l => l.id === loanId);
+        if (!loan) return;
+
+        const txnToDelete = loan.transactions?.find(t => t.id === transactionId);
+        const amountToSubtract = txnToDelete && txnToDelete.note !== 'Received Payment' ? Number(txnToDelete.amount) : 0;
+
+        const currentPrincipal = loan.transactions?.reduce((sum, t) => sum + Number(t.amount || 0), 0) || 0;
+        const newPrincipal = Math.max(0, currentPrincipal - amountToSubtract);
+
+        // Try DELETE the actual transaction directly if the API supports it
+        if (!transactionId.includes('-base-prin')) {
+            await fetch(`/api/v1/loans/${loanId}/transactions/${transactionId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            }).catch(() => { });
+        }
+
+        if (amountToSubtract > 0) {
+            await fetch(`/api/v1/loans/${loanId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({
+                    person_name: personId,
+                    purpose: loan.purpose,
+                    principal_amount: newPrincipal,
+                    interest_amount: loan.interest,
+                    duration: loan.duration,
+                    due_date: loan.dueDate ? loan.dueDate.split('T')[0] : ''
+                })
+            });
+        }
+        await fetchLoans();
+    };
+
+    const markLoanReceived = async (personId, loanId, amount, date, mode) => {
+        const token = getToken();
+        if (!token) return;
+
+        await fetch(`/api/v1/loans/${loanId}/transactions`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({
+                amount: amount,
+                date: date ? date.split('T')[0] : new Date().toISOString().split('T')[0],
+                mode: mode,
+                note: 'Received Payment'
+            })
+        });
+        await fetchLoans();
+    };
+
+    const addPaymentMode = (mode) => {
+        if (!state.paymentModes.includes(mode)) {
+            setState(prev => ({ ...prev, paymentModes: [...prev.paymentModes, mode] }));
+            // Add custom localstorage for payment modes since they aren't synced to DB now:
+            const saved = JSON.parse(localStorage.getItem('btrack-modes') || '[]');
+            saved.push(mode);
+            localStorage.setItem('btrack-modes', JSON.stringify(saved));
+        }
+    };
+
+    const deletePaymentMode = (mode) => {
+        setState(prev => ({ ...prev, paymentModes: prev.paymentModes.filter(m => m !== mode) }));
+        const saved = JSON.parse(localStorage.getItem('btrack-modes') || '[]');
+        localStorage.setItem('btrack-modes', JSON.stringify(saved.filter(m => m !== mode)));
+    };
+
+    useEffect(() => {
+        const savedModes = JSON.parse(localStorage.getItem('btrack-modes') || '[]');
+        if (savedModes.length) {
+            setState(prev => ({ ...prev, paymentModes: [...DEFAULT_PAYMENT_MODES, ...savedModes] }));
+        }
+    }, []);
 
     const actions = {
-        addPerson: (data) => dispatch({ type: 'ADD_PERSON', payload: data }),
-        editPerson: (id, name) => dispatch({ type: 'EDIT_PERSON', payload: { id, name } }),
-        deletePerson: (id) => dispatch({ type: 'DELETE_PERSON', payload: { id } }),
-        addLoan: (personId, data) => dispatch({ type: 'ADD_LOAN', payload: { personId, ...data } }),
-        addPaymentMode: (mode) => dispatch({ type: 'ADD_PAYMENT_MODE', payload: mode }),
-        deletePaymentMode: (mode) => dispatch({ type: 'DELETE_PAYMENT_MODE', payload: mode }),
-        editLoan: (personId, loanId, updates) =>
-            dispatch({ type: 'EDIT_LOAN', payload: { personId, loanId, updates } }),
-        deleteLoan: (personId, loanId) =>
-            dispatch({ type: 'DELETE_LOAN', payload: { personId, loanId } }),
-        addTransaction: (personId, loanId, data) =>
-            dispatch({ type: 'ADD_TRANSACTION', payload: { personId, loanId, ...data } }),
-        deleteTransaction: (personId, loanId, transactionId) =>
-            dispatch({ type: 'DELETE_TRANSACTION', payload: { personId, loanId, transactionId } }),
-        markLoanReceived: (personId, loanId, amount, date, mode) =>
-            dispatch({ type: 'MARK_LOAN_RECEIVED', payload: { personId, loanId, amount, date, mode } }),
+        addPerson, editPerson, deletePerson,
+        addLoan, editLoan, deleteLoan,
+        addTransaction, deleteTransaction, markLoanReceived,
+        addPaymentMode, deletePaymentMode, refreshData: fetchLoans
     };
 
     return (
