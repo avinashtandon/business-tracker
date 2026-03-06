@@ -52,7 +52,14 @@ function AuthScreen({ onAuth }) {
         }
 
         // Successfully registered! Let's authorize them
-        const userData = { email, username, ...data.data };
+        const userInfo = data.data?.user || {};
+        const userData = {
+          email: userInfo.email || email,
+          username: username,
+          first_name: userInfo.first_name || firstName,
+          last_name: userInfo.last_name || lastName,
+          ...data.data
+        };
         localStorage.setItem('auth_user', JSON.stringify(userData));
         if (data.data?.access_token) {
           localStorage.setItem('access_token', data.data.access_token);
@@ -78,7 +85,13 @@ function AuthScreen({ onAuth }) {
         }
 
         // Successfully logged in! Let's authorize them
-        const userData = { email, ...data.data };
+        const userInfo = data.data?.user || {};
+        const userData = {
+          email: userInfo.email || email,
+          first_name: userInfo.first_name || '',
+          last_name: userInfo.last_name || '',
+          ...data.data
+        };
         localStorage.setItem('auth_user', JSON.stringify(userData));
         if (data.data?.access_token) {
           localStorage.setItem('access_token', data.data.access_token);
@@ -184,7 +197,7 @@ function AuthScreen({ onAuth }) {
 }
 
 export default function App() {
-  const { refreshData } = useApp();
+  const { refreshData, clearData } = useApp();
   const [user, setUser] = useState(null);
   const [page, setPage] = useState('dashboard');
   const [selectedPersonId, setSelectedPersonId] = useState(null);
@@ -206,6 +219,7 @@ export default function App() {
   const handleLogout = () => {
     localStorage.removeItem('auth_user');
     localStorage.removeItem('access_token');
+    clearData();    // ← wipe all in-memory loan/people data immediately
     setUser(null);
   };
 
@@ -215,6 +229,7 @@ export default function App() {
 
   if (!user) {
     return <AuthScreen onAuth={(userData) => {
+      clearData();   // ← always wipe any previous user's data first
       setUser(userData || { email: 'user@example.com' });
       refreshData();
     }} />;

@@ -347,11 +347,17 @@ export function AppProvider({ children }) {
         }
     }, []);
 
+    const clearData = () => {
+        setState({ people: [], paymentModes: DEFAULT_PAYMENT_MODES });
+    };
+
     const actions = {
         addPerson, editPerson, deletePerson,
         addLoan, editLoan, deleteLoan,
         addTransaction, deleteTransaction, markLoanReceived,
-        addPaymentMode, deletePaymentMode, refreshData: fetchLoans
+        addPaymentMode, deletePaymentMode,
+        refreshData: fetchLoans,
+        clearData
     };
 
     return (
