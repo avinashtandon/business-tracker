@@ -7,8 +7,8 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://35.154.220.105:8080',
         // target: 'http://localhost:8080',
+        target: 'https://api.businesstracker.atbhdx.com',
         changeOrigin: true,
       },
     },
