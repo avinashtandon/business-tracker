@@ -5,8 +5,9 @@ import { AppContext } from './useApp';
 export function AppProvider({ children }) {
     const [state, setState] = useState({ people: [], paymentModes: DEFAULT_PAYMENT_MODES });
     const [loading, setLoading] = useState(true);
+    const [token, setToken] = useState(() => localStorage.getItem('access_token'));
 
-    const getToken = () => localStorage.getItem('access_token');
+    const getToken = () => token;
 
     const fetchLoans = async () => {
         const token = getToken();
@@ -15,6 +16,7 @@ export function AppProvider({ children }) {
             return;
         }
 
+        setLoading(true);
         try {
             const res = await fetch('/api/v1/loans', {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -75,8 +77,23 @@ export function AppProvider({ children }) {
     };
 
     useEffect(() => {
-        fetchLoans();
+        if (token) {
+            fetchLoans();
+        } else {
+            setLoading(false);
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [token]);
+
+    useEffect(() => {
+        const handleStorageChange = () => {
+            const stored = localStorage.getItem("access_token");
+            setToken(prev => prev !== stored ? stored : prev);
+        };
+
+        window.addEventListener("storage", handleStorageChange);
+
+        return () => window.removeEventListener("storage", handleStorageChange);
     }, []);
 
     const addPerson = async (data) => {
@@ -361,7 +378,7 @@ export function AppProvider({ children }) {
     };
 
     return (
-        <AppContext.Provider value={{ state, ...actions }}>
+        <AppContext.Provider value={{ state, loading, ...actions }}>
             {children}
         </AppContext.Provider>
     );

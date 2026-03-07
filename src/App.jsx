@@ -64,6 +64,7 @@ function AuthScreen({ onAuth }) {
         localStorage.setItem('auth_user', JSON.stringify(userData));
         if (data.data?.access_token) {
           localStorage.setItem('access_token', data.data.access_token);
+          window.dispatchEvent(new Event("storage"));
         }
         onAuth(userData);
       } else {
@@ -96,6 +97,7 @@ function AuthScreen({ onAuth }) {
         localStorage.setItem('auth_user', JSON.stringify(userData));
         if (data.data?.access_token) {
           localStorage.setItem('access_token', data.data.access_token);
+          window.dispatchEvent(new Event("storage"));
         }
         onAuth(userData);
       }
@@ -220,6 +222,7 @@ export default function App() {
   const handleLogout = () => {
     localStorage.removeItem('auth_user');
     localStorage.removeItem('access_token');
+    window.dispatchEvent(new Event("storage"));
     clearData();    // ← wipe all in-memory loan/people data immediately
     setUser(null);
   };
