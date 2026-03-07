@@ -209,28 +209,42 @@ export function exportData(people) {
  * Fetch helper that automatically attaches Bearer token and handles 401 expiration
  */
 let isLoggingOut = false;
+let globalTokenExpiry = null;
 
-function isTokenExpired(token) {
-    if (!token) return true;
+export function setAuthToken(token) {
+    if (!token) {
+        globalTokenExpiry = null;
+        return;
+    }
     try {
         const payload = JSON.parse(atob(token.split('.')[1]));
-        return Date.now() >= payload.exp * 1000;
+        globalTokenExpiry = payload.exp * 1000;
     } catch {
-        return true;
+        globalTokenExpiry = null;
     }
+}
+
+function authLogout() {
+    isLoggingOut = true;
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("auth_user");
+    window.dispatchEvent(new Event("storage"));
+
+    // allow future sessions to execute cleanly 
+    setTimeout(() => {
+        isLoggingOut = false;
+    }, 100);
 }
 
 export async function apiFetch(url, options = {}) {
     const token = localStorage.getItem("access_token");
 
-    if (token && isTokenExpired(token) && !isLoggingOut) {
-        isLoggingOut = true;
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("auth_user");
-        window.dispatchEvent(new Event("storage"));
-        throw new Error("Token expired");
-    } else if (token && isTokenExpired(token)) {
-        throw new Error("Token expired");
+    // Auto-parse global token expiry on hard reload
+    if (token && globalTokenExpiry === null) setAuthToken(token);
+
+    if (token && globalTokenExpiry && Date.now() >= globalTokenExpiry) {
+        if (!isLoggingOut) authLogout();
+        throw new Error("AUTH_EXPIRED");
     }
 
     const res = await fetch(url, {
@@ -242,14 +256,9 @@ export async function apiFetch(url, options = {}) {
         }
     });
 
-    if (res.status === 401 && !isLoggingOut) {
-        isLoggingOut = true;
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("auth_user");
-        window.dispatchEvent(new Event("storage"));
-        throw new Error("Unauthorized");
-    } else if (res.status === 401) {
-        throw new Error("Unauthorized");
+    if (res.status === 401) {
+        if (!isLoggingOut) authLogout();
+        throw new Error("AUTH_UNAUTHORIZED");
     }
 
     return res;

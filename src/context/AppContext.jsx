@@ -133,7 +133,7 @@ export function AppProvider({ children }) {
         }
         await fetchLoans();
         } catch (err) {
-            if (err.message !== "Unauthorized" && err.message !== "Token expired") {
+            if (!["AUTH_EXPIRED", "AUTH_UNAUTHORIZED"].includes(err.message)) {
                 console.error("Action failed:", err);
             }
         }
@@ -177,7 +177,7 @@ export function AppProvider({ children }) {
         }
         await fetchLoans();
         } catch (err) {
-            if (err.message !== "Unauthorized" && err.message !== "Token expired") {
+            if (!["AUTH_EXPIRED", "AUTH_UNAUTHORIZED"].includes(err.message)) {
                 console.error("Action failed:", err);
             }
         }
@@ -205,7 +205,7 @@ export function AppProvider({ children }) {
         });
         await fetchLoans();
         } catch (err) {
-            if (err.message !== "Unauthorized" && err.message !== "Token expired") {
+            if (!["AUTH_EXPIRED", "AUTH_UNAUTHORIZED"].includes(err.message)) {
                 console.error("Action failed:", err);
             }
         }
@@ -219,7 +219,7 @@ export function AppProvider({ children }) {
             method: 'DELETE' });
         await fetchLoans();
         } catch (err) {
-            if (err.message !== "Unauthorized" && err.message !== "Token expired") {
+            if (!["AUTH_EXPIRED", "AUTH_UNAUTHORIZED"].includes(err.message)) {
                 console.error("Action failed:", err);
             }
         }
@@ -238,7 +238,7 @@ export function AppProvider({ children }) {
         }
         await fetchLoans();
         } catch (err) {
-            if (err.message !== "Unauthorized" && err.message !== "Token expired") {
+            if (!["AUTH_EXPIRED", "AUTH_UNAUTHORIZED"].includes(err.message)) {
                 console.error("Action failed:", err);
             }
         }
@@ -268,7 +268,7 @@ export function AppProvider({ children }) {
         }
         await fetchLoans();
         } catch (err) {
-            if (err.message !== "Unauthorized" && err.message !== "Token expired") {
+            if (!["AUTH_EXPIRED", "AUTH_UNAUTHORIZED"].includes(err.message)) {
                 console.error("Action failed:", err);
             }
         }
@@ -309,7 +309,7 @@ export function AppProvider({ children }) {
 
         await fetchLoans();
         } catch (err) {
-            if (err.message !== "Unauthorized" && err.message !== "Token expired") {
+            if (!["AUTH_EXPIRED", "AUTH_UNAUTHORIZED"].includes(err.message)) {
                 console.error("Action failed:", err);
             }
         }
@@ -351,7 +351,7 @@ export function AppProvider({ children }) {
         }
         await fetchLoans();
         } catch (err) {
-            if (err.message !== "Unauthorized" && err.message !== "Token expired") {
+            if (!["AUTH_EXPIRED", "AUTH_UNAUTHORIZED"].includes(err.message)) {
                 console.error("Action failed:", err);
             }
         }
@@ -373,7 +373,7 @@ export function AppProvider({ children }) {
         });
         await fetchLoans();
         } catch (err) {
-            if (err.message !== "Unauthorized" && err.message !== "Token expired") {
+            if (!["AUTH_EXPIRED", "AUTH_UNAUTHORIZED"].includes(err.message)) {
                 console.error("Action failed:", err);
             }
         }

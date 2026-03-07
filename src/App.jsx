@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useApp } from './context/useApp';
+import { setAuthToken } from './utils/helpers';
 import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
 import People from './pages/People';
@@ -64,6 +65,7 @@ function AuthScreen({ onAuth }) {
         localStorage.setItem('auth_user', JSON.stringify(userData));
         if (data.data?.access_token) {
           localStorage.setItem('access_token', data.data.access_token);
+          setAuthToken(data.data.access_token);
           window.dispatchEvent(new Event("storage"));
         }
         onAuth(userData);
@@ -97,6 +99,7 @@ function AuthScreen({ onAuth }) {
         localStorage.setItem('auth_user', JSON.stringify(userData));
         if (data.data?.access_token) {
           localStorage.setItem('access_token', data.data.access_token);
+          setAuthToken(data.data.access_token);
           window.dispatchEvent(new Event("storage"));
         }
         onAuth(userData);
@@ -243,6 +246,7 @@ export default function App() {
   const handleLogout = () => {
     localStorage.removeItem('auth_user');
     localStorage.removeItem('access_token');
+    setAuthToken(null);
     window.dispatchEvent(new Event("storage"));
     clearData();    // ← wipe all in-memory loan/people data immediately
     setUser(null);
