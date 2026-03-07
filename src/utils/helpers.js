@@ -227,11 +227,18 @@ export function setAuthToken(token) {
 // Ensure token expiry is pre-cached on hard reload immediately
 const initialToken = localStorage.getItem("access_token");
 if (initialToken) {
-    setAuthToken(initialToken);
+    try {
+        setAuthToken(initialToken);
+        if (globalTokenExpiry === null) throw new Error("Invalid token");
+    } catch {
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("auth_user");
+    }
 }
 
 function authLogout() {
     isLoggingOut = true;
+    globalTokenExpiry = null;
     localStorage.removeItem("access_token");
     localStorage.removeItem("auth_user");
     window.dispatchEvent(new Event("storage"));
