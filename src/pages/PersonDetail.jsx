@@ -7,6 +7,7 @@ import {
     formatCurrency,
     formatDate,
     getDaysUntilDue,
+    exportData,
 } from '../utils/helpers';
 import StatusBadge from '../components/StatusBadge';
 import Modal from '../components/Modal';
@@ -118,6 +119,7 @@ export default function PersonDetail({ personId, onNavigate }) {
                 </div>
                 <div className="person-detail-actions">
                     <button className="btn btn-primary btn-sm" onClick={() => setShowAddLoanModal(true)}>+ New Loan</button>
+                    <button className="btn btn-secondary btn-sm" onClick={() => exportData([person])} title="Export this person's loans as CSV">📥 Export CSV</button>
                     <button className="btn btn-secondary btn-sm" onClick={() => { setEditName(person.name); setShowEditName(true); }}>✏️ Rename</button>
                     <button className="btn btn-danger btn-sm" onClick={() => setShowDeletePerson(true)}>🗑️ Delete</button>
                 </div>

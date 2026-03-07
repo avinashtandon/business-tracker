@@ -154,7 +154,9 @@ export function exportData(people) {
             (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
         );
         loans.forEach((loan, loanIdx) => {
-            const txns = [...loan.transactions].sort((a, b) => new Date(a.date) - new Date(b.date));
+            const txns = [...loan.transactions]
+                .filter(t => t.type !== 'received')
+                .sort((a, b) => new Date(a.date) - new Date(b.date));
             txns.forEach((txn) => {
                 rows.push([person.name, loanIdx + 1, txn.date, txn.amount, txn.mode]);
             });
