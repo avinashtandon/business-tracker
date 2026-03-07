@@ -236,10 +236,16 @@ if (initialToken) {
     }
 }
 
+export const AUTH_ERRORS = {
+    EXPIRED: "AUTH_EXPIRED",
+    UNAUTHORIZED: "AUTH_UNAUTHORIZED"
+};
+
 function authLogout() {
     isLoggingOut = true;
     globalTokenExpiry = null;
     localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
     localStorage.removeItem("auth_user");
     window.dispatchEvent(new Event("storage"));
 
@@ -249,15 +255,64 @@ function authLogout() {
     }, 100);
 }
 
-export async function apiFetch(url, options = {}) {
-    const token = localStorage.getItem("access_token");
+let isRefreshing = false;
+let refreshPromise = null;
 
-    if (token && globalTokenExpiry && Date.now() >= globalTokenExpiry) {
-        if (!isLoggingOut) authLogout();
-        throw new Error("AUTH_EXPIRED");
+async function attemptRefresh() {
+    const refreshToken = localStorage.getItem("refresh_token");
+    if (!refreshToken) throw new Error("No refresh token");
+
+    const res = await fetch("/api/v1/auth/refresh", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refresh_token: refreshToken })
+    });
+
+    if (!res.ok) throw new Error("Refresh failed");
+    
+    const json = await res.json();
+    if (!json.success || !json.data?.access_token) throw new Error("Invalid refresh response");
+
+    const { access_token, refresh_token } = json.data;
+    localStorage.setItem("access_token", access_token);
+    if (refresh_token) localStorage.setItem("refresh_token", refresh_token);
+    setAuthToken(access_token);
+    window.dispatchEvent(new Event("storage")); // inform other tabs
+    return access_token;
+}
+
+export async function apiFetch(url, options = {}) {
+    let token = localStorage.getItem("access_token");
+
+    if (token && globalTokenExpiry === null) {
+        try {
+            setAuthToken(token);
+            if (globalTokenExpiry === null) throw new Error("Invalid token");
+        } catch {
+            if (!isLoggingOut) authLogout();
+            throw new Error(AUTH_ERRORS.EXPIRED);
+        }
     }
 
-    const res = await fetch(url, {
+    // Proactive refresh
+    if (token && globalTokenExpiry && Date.now() >= globalTokenExpiry) {
+        if (!isRefreshing) {
+            isRefreshing = true;
+            refreshPromise = attemptRefresh().finally(() => {
+                isRefreshing = false;
+                refreshPromise = null;
+            });
+        }
+        
+        try {
+            token = await refreshPromise;
+        } catch (err) {
+            if (!isLoggingOut) authLogout();
+            throw new Error(AUTH_ERRORS.EXPIRED);
+        }
+    }
+
+    let res = await fetch(url, {
         ...options,
         headers: {
             'Content-Type': 'application/json',
@@ -266,9 +321,34 @@ export async function apiFetch(url, options = {}) {
         }
     });
 
+    // Reactive refresh if backend still returned 401
     if (res.status === 401) {
-        if (!isLoggingOut) authLogout();
-        throw new Error("AUTH_UNAUTHORIZED");
+        if (!isRefreshing) {
+             isRefreshing = true;
+             refreshPromise = attemptRefresh().finally(() => {
+                 isRefreshing = false;
+                 refreshPromise = null;
+             });
+        }
+        try {
+            token = await refreshPromise;
+            res = await fetch(url, {
+                ...options,
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(options.headers || {}),
+                    ...(token ? { Authorization: `Bearer ${token}` } : {})
+                }
+            });
+        } catch (err) {
+            if (!isLoggingOut) authLogout();
+            throw new Error(AUTH_ERRORS.UNAUTHORIZED);
+        }
+
+        if (res.status === 401) {
+            if (!isLoggingOut) authLogout();
+            throw new Error(AUTH_ERRORS.UNAUTHORIZED);
+        }
     }
 
     return res;
