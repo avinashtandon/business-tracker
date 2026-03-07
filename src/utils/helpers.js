@@ -208,6 +208,8 @@ export function exportData(people) {
 /**
  * Fetch helper that automatically attaches Bearer token and handles 401 expiration
  */
+let isLoggingOut = false;
+
 export async function apiFetch(url, options = {}) {
     const token = localStorage.getItem("access_token");
 
@@ -220,9 +222,13 @@ export async function apiFetch(url, options = {}) {
         }
     });
 
-    if (res.status === 401) {
+    if (res.status === 401 && !isLoggingOut) {
+        isLoggingOut = true;
         localStorage.removeItem("access_token");
+        localStorage.removeItem("auth_user");
         window.dispatchEvent(new Event("storage"));
+        throw new Error("Unauthorized");
+    } else if (res.status === 401) {
         throw new Error("Unauthorized");
     }
 

@@ -219,6 +219,27 @@ export default function App() {
     setIsMounting(false);
   }, []);
 
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const token = localStorage.getItem("access_token");
+      const savedUser = localStorage.getItem("auth_user");
+
+      if (!token || !savedUser) {
+        setUser(null);
+        return;
+      }
+
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch {
+        setUser(null);
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
   const handleLogout = () => {
     localStorage.removeItem('auth_user');
     localStorage.removeItem('access_token');
