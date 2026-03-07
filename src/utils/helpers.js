@@ -242,6 +242,8 @@ export const AUTH_ERRORS = {
 };
 
 function authLogout() {
+    if (isLoggingOut) return;
+
     isLoggingOut = true;
     globalTokenExpiry = null;
     localStorage.removeItem("access_token");
@@ -289,7 +291,7 @@ export async function apiFetch(url, options = {}) {
             setAuthToken(token);
             if (globalTokenExpiry === null) throw new Error("Invalid token");
         } catch {
-            if (!isLoggingOut) authLogout();
+            authLogout();
             return new Response(JSON.stringify({ success: false, error: { message: "Unauthorized" } }), { status: 401, headers: { 'Content-Type': 'application/json' } });
         }
     }
@@ -307,7 +309,7 @@ export async function apiFetch(url, options = {}) {
         try {
             token = await refreshPromise;
         } catch (err) {
-            if (!isLoggingOut) authLogout();
+            authLogout();
             return new Response(JSON.stringify({ success: false, error: { message: "Unauthorized" } }), { status: 401, headers: { 'Content-Type': 'application/json' } });
         }
     }
@@ -341,13 +343,13 @@ export async function apiFetch(url, options = {}) {
                 }
             });
         } catch (err) {
-            if (!isLoggingOut) authLogout();
+            authLogout();
             return new Response(JSON.stringify({ success: false, error: { message: "Unauthorized" } }), { status: 401, headers: { 'Content-Type': 'application/json' } });
         }
 
         if (res.status === 401) {
-            if (!isLoggingOut) authLogout();
-            return new Response(JSON.stringify({ success: false, error: { message: "Unauthorized" } }), { status: 401, headers: { 'Content-Type': 'application/json' } });
+            authLogout();
+            return res;
         }
     }
 
