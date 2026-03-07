@@ -290,7 +290,7 @@ export async function apiFetch(url, options = {}) {
             if (globalTokenExpiry === null) throw new Error("Invalid token");
         } catch {
             if (!isLoggingOut) authLogout();
-            throw new Error(AUTH_ERRORS.EXPIRED);
+            return new Response(JSON.stringify({ success: false, error: { message: "Unauthorized" } }), { status: 401, headers: { 'Content-Type': 'application/json' } });
         }
     }
 
@@ -308,7 +308,7 @@ export async function apiFetch(url, options = {}) {
             token = await refreshPromise;
         } catch (err) {
             if (!isLoggingOut) authLogout();
-            throw new Error(AUTH_ERRORS.EXPIRED);
+            return new Response(JSON.stringify({ success: false, error: { message: "Unauthorized" } }), { status: 401, headers: { 'Content-Type': 'application/json' } });
         }
     }
 
@@ -342,12 +342,12 @@ export async function apiFetch(url, options = {}) {
             });
         } catch (err) {
             if (!isLoggingOut) authLogout();
-            throw new Error(AUTH_ERRORS.UNAUTHORIZED);
+            return new Response(JSON.stringify({ success: false, error: { message: "Unauthorized" } }), { status: 401, headers: { 'Content-Type': 'application/json' } });
         }
 
         if (res.status === 401) {
             if (!isLoggingOut) authLogout();
-            throw new Error(AUTH_ERRORS.UNAUTHORIZED);
+            return new Response(JSON.stringify({ success: false, error: { message: "Unauthorized" } }), { status: 401, headers: { 'Content-Type': 'application/json' } });
         }
     }
 
