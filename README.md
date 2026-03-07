@@ -10,6 +10,12 @@ A full-stack, dark-mode, mobile-friendly web app to track money you lend to peop
 - Add, rename, and delete people you lend money to
 - Aggregate summary per person — total lent, total to receive, total received, and profit
 
+### 📈 Crypto Portfolio
+- Track your cryptocurrency investments and purchases
+- Real-time live prices synced via backend proxy (cached for performance)
+- Calculate total invested, current value, total P&L, and average buy price per coin
+- Beautiful visual breakdown of live market data using dynamic badges
+
 ### 📋 Multiple Loan Cycles per Person
 - Each person can have multiple independent loan cycles
 - Each loan tracks its own **principal, interest, due date, duration, and payment mode**
@@ -115,6 +121,16 @@ npm run dev
 ```
 
 Frontend runs on **http://localhost:5173** and proxies `/api/*` to the backend.
+
+---
+
+## 🌍 Production Deployment
+
+### Frontend (Vercel)
+The React application is structurally optimized for deployment using **Vercel**. By configuring the `vercel.json` rewrites rules, API requests effortlessly map to the production backend's static IP without encountering CORS collisions.
+
+### Backend (AWS Lightsail)
+The Go REST API relies on a Dockerized lightweight ecosystem deployed on **AWS Lightsail**. It securely operates attached to a static public IPv4 address and handles TLS automatically via reverse proxies. A robust CI/CD pipeline (`.github/workflows`) manages automated, seamless SSH deliveries on `git push`.
 
 ---
 
