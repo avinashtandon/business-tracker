@@ -210,8 +210,28 @@ export function exportData(people) {
  */
 let isLoggingOut = false;
 
+function isTokenExpired(token) {
+    if (!token) return true;
+    try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        return Date.now() >= payload.exp * 1000;
+    } catch {
+        return true;
+    }
+}
+
 export async function apiFetch(url, options = {}) {
     const token = localStorage.getItem("access_token");
+
+    if (token && isTokenExpired(token) && !isLoggingOut) {
+        isLoggingOut = true;
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("auth_user");
+        window.dispatchEvent(new Event("storage"));
+        throw new Error("Token expired");
+    } else if (token && isTokenExpired(token)) {
+        throw new Error("Token expired");
+    }
 
     const res = await fetch(url, {
         ...options,

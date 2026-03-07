@@ -96,8 +96,8 @@ export function AppProvider({ children }) {
     }, []);
 
     const addPerson = async (data) => {
-        const token = getToken();
-        if (!token) return;
+        if (!localStorage.getItem("access_token")) return;
+        try {
 
         const response = await apiFetch('/api/v1/loans', {
             method: 'POST',
@@ -118,7 +118,7 @@ export function AppProvider({ children }) {
         } else {
             const loanData = await response.json().catch(() => null);
             if (loanData?.data?.id && Number(data.principal) > 0) {
-                const token2 = getToken();
+                
                 await apiFetch(`/api/v1/loans/${loanData.data.id}/transactions`, {
                     method: 'POST',
                     
@@ -132,11 +132,16 @@ export function AppProvider({ children }) {
             }
         }
         await fetchLoans();
+        } catch (err) {
+            if (err.message !== "Unauthorized" && err.message !== "Token expired") {
+                console.error("Action failed:", err);
+            }
+        }
     };
 
     const addLoan = async (personId, data) => {
-        const token = getToken();
-        if (!token) return;
+        if (!localStorage.getItem("access_token")) return;
+        try {
 
         const response = await apiFetch('/api/v1/loans', {
             method: 'POST',
@@ -157,7 +162,7 @@ export function AppProvider({ children }) {
         } else {
             const loanData = await response.json().catch(() => null);
             if (loanData?.data?.id && Number(data.principal) > 0) {
-                const token2 = getToken();
+                
                 await apiFetch(`/api/v1/loans/${loanData.data.id}/transactions`, {
                     method: 'POST',
                     
@@ -171,11 +176,16 @@ export function AppProvider({ children }) {
             }
         }
         await fetchLoans();
+        } catch (err) {
+            if (err.message !== "Unauthorized" && err.message !== "Token expired") {
+                console.error("Action failed:", err);
+            }
+        }
     };
 
     const editLoan = async (personId, loanId, updates) => {
-        const token = getToken();
-        if (!token) return;
+        if (!localStorage.getItem("access_token")) return;
+        try {
 
         const person = state.people.find(p => p.id === personId);
         const loan = person?.loans.find(l => l.id === loanId);
@@ -194,20 +204,30 @@ export function AppProvider({ children }) {
             })
         });
         await fetchLoans();
+        } catch (err) {
+            if (err.message !== "Unauthorized" && err.message !== "Token expired") {
+                console.error("Action failed:", err);
+            }
+        }
     };
 
     const deleteLoan = async (personId, loanId) => {
-        const token = getToken();
-        if (!token) return;
+        if (!localStorage.getItem("access_token")) return;
+        try {
 
         await apiFetch(`/api/v1/loans/${loanId}`, {
             method: 'DELETE' });
         await fetchLoans();
+        } catch (err) {
+            if (err.message !== "Unauthorized" && err.message !== "Token expired") {
+                console.error("Action failed:", err);
+            }
+        }
     };
 
     const deletePerson = async (personId) => {
-        const token = getToken();
-        if (!token) return;
+        if (!localStorage.getItem("access_token")) return;
+        try {
 
         const person = state.people.find(p => p.id === personId);
         if (person) {
@@ -217,11 +237,16 @@ export function AppProvider({ children }) {
             }
         }
         await fetchLoans();
+        } catch (err) {
+            if (err.message !== "Unauthorized" && err.message !== "Token expired") {
+                console.error("Action failed:", err);
+            }
+        }
     };
 
     const editPerson = async (oldName, newName) => {
-        const token = getToken();
-        if (!token) return;
+        if (!localStorage.getItem("access_token")) return;
+        try {
 
         const person = state.people.find(p => p.id === oldName);
         if (person) {
@@ -242,11 +267,16 @@ export function AppProvider({ children }) {
             }
         }
         await fetchLoans();
+        } catch (err) {
+            if (err.message !== "Unauthorized" && err.message !== "Token expired") {
+                console.error("Action failed:", err);
+            }
+        }
     };
 
     const addTransaction = async (personId, loanId, data) => {
-        const token = getToken();
-        if (!token) return;
+        if (!localStorage.getItem("access_token")) return;
+        try {
 
         const person = state.people.find(p => p.id === personId);
         const loan = person?.loans.find(l => l.id === loanId);
@@ -278,11 +308,16 @@ export function AppProvider({ children }) {
         });
 
         await fetchLoans();
+        } catch (err) {
+            if (err.message !== "Unauthorized" && err.message !== "Token expired") {
+                console.error("Action failed:", err);
+            }
+        }
     };
 
     const deleteTransaction = async (personId, loanId, transactionId) => {
-        const token = getToken();
-        if (!token) return;
+        if (!localStorage.getItem("access_token")) return;
+        try {
 
         const person = state.people.find(p => p.id === personId);
         const loan = person?.loans.find(l => l.id === loanId);
@@ -315,11 +350,16 @@ export function AppProvider({ children }) {
             });
         }
         await fetchLoans();
+        } catch (err) {
+            if (err.message !== "Unauthorized" && err.message !== "Token expired") {
+                console.error("Action failed:", err);
+            }
+        }
     };
 
     const markLoanReceived = async (personId, loanId, amount, date, mode) => {
-        const token = getToken();
-        if (!token) return;
+        if (!localStorage.getItem("access_token")) return;
+        try {
 
         await apiFetch(`/api/v1/loans/${loanId}/transactions`, {
             method: 'POST',
@@ -332,6 +372,11 @@ export function AppProvider({ children }) {
             })
         });
         await fetchLoans();
+        } catch (err) {
+            if (err.message !== "Unauthorized" && err.message !== "Token expired") {
+                console.error("Action failed:", err);
+            }
+        }
     };
 
     const addPaymentMode = (mode) => {
