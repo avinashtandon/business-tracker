@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { DEFAULT_PAYMENT_MODES } from '../utils/helpers';
+import { DEFAULT_PAYMENT_MODES, apiFetch } from '../utils/helpers';
 import { AppContext } from './useApp';
 
 export function AppProvider({ children }) {
@@ -18,9 +18,8 @@ export function AppProvider({ children }) {
 
         setLoading(true);
         try {
-            const res = await fetch('/api/v1/loans', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            const res = await apiFetch('/api/v1/loans');
+
             const json = await res.json();
 
             if (json.success) {
@@ -100,9 +99,9 @@ export function AppProvider({ children }) {
         const token = getToken();
         if (!token) return;
 
-        const response = await fetch('/api/v1/loans', {
+        const response = await apiFetch('/api/v1/loans', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            
             body: JSON.stringify({
                 person_name: data.name,
                 purpose: data.purpose || 'Business Loan',
@@ -120,9 +119,9 @@ export function AppProvider({ children }) {
             const loanData = await response.json().catch(() => null);
             if (loanData?.data?.id && Number(data.principal) > 0) {
                 const token2 = getToken();
-                await fetch(`/api/v1/loans/${loanData.data.id}/transactions`, {
+                await apiFetch(`/api/v1/loans/${loanData.data.id}/transactions`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token2}` },
+                    
                     body: JSON.stringify({
                         amount: Number(data.principal),
                         date: new Date().toISOString().split('T')[0],
@@ -139,9 +138,9 @@ export function AppProvider({ children }) {
         const token = getToken();
         if (!token) return;
 
-        const response = await fetch('/api/v1/loans', {
+        const response = await apiFetch('/api/v1/loans', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            
             body: JSON.stringify({
                 person_name: personId,
                 purpose: data.purpose || 'Business Loan',
@@ -159,9 +158,9 @@ export function AppProvider({ children }) {
             const loanData = await response.json().catch(() => null);
             if (loanData?.data?.id && Number(data.principal) > 0) {
                 const token2 = getToken();
-                await fetch(`/api/v1/loans/${loanData.data.id}/transactions`, {
+                await apiFetch(`/api/v1/loans/${loanData.data.id}/transactions`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token2}` },
+                    
                     body: JSON.stringify({
                         amount: Number(data.principal),
                         date: new Date().toISOString().split('T')[0],
@@ -182,9 +181,9 @@ export function AppProvider({ children }) {
         const loan = person?.loans.find(l => l.id === loanId);
         const currentPrincipal = loan?.transactions?.[0]?.amount || 0;
 
-        await fetch(`/api/v1/loans/${loanId}`, {
+        await apiFetch(`/api/v1/loans/${loanId}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            
             body: JSON.stringify({
                 person_name: personId,
                 purpose: updates.purpose || loan?.purpose || '',
@@ -201,10 +200,8 @@ export function AppProvider({ children }) {
         const token = getToken();
         if (!token) return;
 
-        await fetch(`/api/v1/loans/${loanId}`, {
-            method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
+        await apiFetch(`/api/v1/loans/${loanId}`, {
+            method: 'DELETE' });
         await fetchLoans();
     };
 
@@ -215,10 +212,8 @@ export function AppProvider({ children }) {
         const person = state.people.find(p => p.id === personId);
         if (person) {
             for (const loan of person.loans) {
-                await fetch(`/api/v1/loans/${loan.id}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                await apiFetch(`/api/v1/loans/${loan.id}`, {
+                    method: 'DELETE' });
             }
         }
         await fetchLoans();
@@ -232,9 +227,9 @@ export function AppProvider({ children }) {
         if (person) {
             for (const loan of person.loans) {
                 const currentPrincipal = loan?.transactions?.[0]?.amount || 0;
-                await fetch(`/api/v1/loans/${loan.id}`, {
+                await apiFetch(`/api/v1/loans/${loan.id}`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    
                     body: JSON.stringify({
                         person_name: newName,
                         purpose: loan.purpose,
@@ -258,9 +253,9 @@ export function AppProvider({ children }) {
         const currentPrincipal = loan?.transactions?.reduce((sum, t) => sum + Number(t.amount || 0), 0) || 0;
         const newPrincipal = currentPrincipal + (Number(data.amount) || 0);
 
-        await fetch(`/api/v1/loans/${loanId}`, {
+        await apiFetch(`/api/v1/loans/${loanId}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            
             body: JSON.stringify({
                 person_name: personId,
                 purpose: loan.purpose,
@@ -271,9 +266,9 @@ export function AppProvider({ children }) {
             })
         });
 
-        await fetch(`/api/v1/loans/${loanId}/transactions`, {
+        await apiFetch(`/api/v1/loans/${loanId}/transactions`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            
             body: JSON.stringify({
                 amount: Number(data.amount) || 0,
                 date: data.date ? data.date.split('T')[0] : new Date().toISOString().split('T')[0],
@@ -301,16 +296,14 @@ export function AppProvider({ children }) {
 
         // Try DELETE the actual transaction directly if the API supports it
         if (!transactionId.includes('-base-prin')) {
-            await fetch(`/api/v1/loans/${loanId}/transactions/${transactionId}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            }).catch(() => { });
+            await apiFetch(`/api/v1/loans/${loanId}/transactions/${transactionId}`, {
+                method: 'DELETE' }).catch(() => { });
         }
 
         if (amountToSubtract > 0) {
-            await fetch(`/api/v1/loans/${loanId}`, {
+            await apiFetch(`/api/v1/loans/${loanId}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                
                 body: JSON.stringify({
                     person_name: personId,
                     purpose: loan.purpose,
@@ -328,9 +321,9 @@ export function AppProvider({ children }) {
         const token = getToken();
         if (!token) return;
 
-        await fetch(`/api/v1/loans/${loanId}/transactions`, {
+        await apiFetch(`/api/v1/loans/${loanId}/transactions`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            
             body: JSON.stringify({
                 amount: amount,
                 date: date ? date.split('T')[0] : new Date().toISOString().split('T')[0],

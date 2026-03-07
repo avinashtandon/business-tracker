@@ -205,3 +205,26 @@ export function exportData(people) {
     URL.revokeObjectURL(url);
 }
 
+/**
+ * Fetch helper that automatically attaches Bearer token and handles 401 expiration
+ */
+export async function apiFetch(url, options = {}) {
+    const token = localStorage.getItem("access_token");
+
+    const res = await fetch(url, {
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...(options.headers || {}),
+            ...(token ? { Authorization: `Bearer ${token}` } : {})
+        }
+    });
+
+    if (res.status === 401) {
+        localStorage.removeItem("access_token");
+        window.dispatchEvent(new Event("storage"));
+        throw new Error("Unauthorized");
+    }
+
+    return res;
+}

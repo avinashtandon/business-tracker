@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import Modal from '../components/Modal';
+import { apiFetch } from '../utils/helpers';
 import './Crypto.css';
 
 const POPULAR_COINS = [
@@ -62,9 +63,9 @@ async function fetchLivePrices(symbols, token) {
     const unique = [...new Set(symbols.filter(Boolean))];
     if (!unique.length) return { prices: {}, stale: false };
     try {
-        const res = await fetch(
+        const res = await apiFetch(
             `${PRICES_API}?symbols=${unique.join(',')}`,
-            { headers: { 'Authorization': `Bearer ${token}` }, signal: AbortSignal.timeout(10000) }
+            { signal: AbortSignal.timeout(10000) }
         );
         const json = await res.json();
         if (json.success) {
@@ -113,7 +114,7 @@ export default function Crypto() {
         const token = getToken();
         if (!token) return;
         try {
-            const res = await fetch(API_BASE, { headers: { 'Authorization': `Bearer ${token}` } });
+            const res = await apiFetch(API_BASE);
             const json = await res.json();
             if (json.success) setHoldings(json.data || []);
         } catch (e) { console.error('Failed to fetch holdings:', e); }
@@ -183,9 +184,8 @@ export default function Crypto() {
 
         setSaving(true);
         try {
-            const res = await fetch(API_BASE, {
+            const res = await apiFetch(API_BASE, {
                 method: 'POST',
-                headers: authHeaders(),
                 body: JSON.stringify({ name, symbol, coingecko_id: isCustom ? null : addCoinForm.geckoId })
             });
             const json = await res.json();
@@ -202,8 +202,8 @@ export default function Crypto() {
         if (!qty || !price || qty <= 0 || price <= 0) return;
         setSaving(true);
         try {
-            const res = await fetch(`${API_BASE}/${addPurchaseCoinId}/purchases`, {
-                method: 'POST', headers: authHeaders(),
+            const res = await apiFetch(`${API_BASE}/${addPurchaseCoinId}/purchases`, {
+                method: 'POST',
                 body: JSON.stringify({
                     quantity: qty, buy_price: price, invested_amount: qty * price,
                     date: purchaseForm.date, exchange: purchaseForm.exchange, note: purchaseForm.note.trim(),
@@ -219,13 +219,13 @@ export default function Crypto() {
     };
 
     const handleDeleteCoin = async () => {
-        await fetch(`${API_BASE}/${deleteCoinId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${getToken()}` } });
+        await apiFetch(`${API_BASE}/${deleteCoinId}`, { method: 'DELETE' });
         setDeleteCoinId(null); await fetchHoldings();
     };
 
     const handleDeletePurchase = async () => {
         const { coinId, purchaseId } = deletePurchaseInfo;
-        await fetch(`${API_BASE}/${coinId}/purchases/${purchaseId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${getToken()}` } });
+        await apiFetch(`${API_BASE}/${coinId}/purchases/${purchaseId}`, { method: 'DELETE' });
         setDeletePurchaseInfo(null); await fetchHoldings();
     };
 
