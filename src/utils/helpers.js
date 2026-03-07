@@ -43,7 +43,9 @@ export function getDaysUntilDue(dueDateStr) {
  * Calculate derived values for a single LOAN
  */
 export function calcLoanTotals(loan) {
-    const totalPrincipal = (loan.transactions || []).reduce(
+    // Only count given (non-received) transactions toward principal
+    const givenTxns = (loan.transactions || []).filter(t => t.type !== 'received');
+    const totalPrincipal = givenTxns.reduce(
         (sum, t) => sum + (Number(t.amount) || 0),
         0
     );
@@ -271,7 +273,7 @@ async function attemptRefresh() {
     });
 
     if (!res.ok) throw new Error("Refresh failed");
-    
+
     const json = await res.json();
     if (!json.success || !json.data?.access_token) throw new Error("Invalid refresh response");
 
@@ -305,7 +307,7 @@ export async function apiFetch(url, options = {}) {
                 refreshPromise = null;
             });
         }
-        
+
         try {
             token = await refreshPromise;
         } catch (err) {
@@ -326,11 +328,11 @@ export async function apiFetch(url, options = {}) {
     // Reactive refresh if backend still returned 401
     if (res.status === 401) {
         if (!isRefreshing) {
-             isRefreshing = true;
-             refreshPromise = attemptRefresh().finally(() => {
-                 isRefreshing = false;
-                 refreshPromise = null;
-             });
+            isRefreshing = true;
+            refreshPromise = attemptRefresh().finally(() => {
+                isRefreshing = false;
+                refreshPromise = null;
+            });
         }
         try {
             token = await refreshPromise;

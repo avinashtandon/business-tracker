@@ -50,6 +50,14 @@ export function AppProvider({ children }) {
                             note: 'Principal/Money Given'
                         });
                     }
+                    // Also include received payments in the timeline so they show up
+                    rxTxns.forEach(t => {
+                        resolvedTxns.push({
+                            ...t,
+                            type: 'received',
+                            note: t.note || 'Received Payment'
+                        });
+                    });
                     resolvedTxns.sort((a, b) => new Date(a.date) - new Date(b.date));
 
                     peopleMap[name].loans.push({
@@ -99,42 +107,42 @@ export function AppProvider({ children }) {
         if (!localStorage.getItem("access_token")) return;
         try {
 
-        const response = await apiFetch('/api/v1/loans', {
-            method: 'POST',
-            
-            body: JSON.stringify({
-                person_name: data.name,
-                purpose: data.purpose || 'Business Loan',
-                principal_amount: Number(data.principal) || 0,
-                interest_amount: Number(data.interest) || 0,
-                duration: data.duration || '',
-                due_date: data.dueDate ? data.dueDate.split('T')[0] : '',
-                payment_mode: data.paymentMode || 'Cash'
-            })
-        });
-        if (!response.ok) {
-            const err = await response.json().catch(() => ({}));
-            alert(`Error adding person: ${err?.error?.message || err?.message || response.statusText}`);
-        } else {
-            const loanData = await response.json().catch(() => null);
-            if (loanData?.data?.id && Number(data.principal) > 0) {
-                
-                await apiFetch(`/api/v1/loans/${loanData.data.id}/transactions`, {
-                    method: 'POST',
-                    
-                    body: JSON.stringify({
-                        amount: Number(data.principal),
-                        date: new Date().toISOString().split('T')[0],
-                        mode: data.paymentMode || 'Cash',
-                        note: 'Initial Amount Given'
-                    })
-                }).catch(() => { });
+            const response = await apiFetch('/api/v1/loans', {
+                method: 'POST',
+
+                body: JSON.stringify({
+                    person_name: data.name,
+                    purpose: data.purpose || 'Business Loan',
+                    principal_amount: Number(data.principal) || 0,
+                    interest_amount: Number(data.interest) || 0,
+                    duration: data.duration || '',
+                    due_date: data.dueDate ? data.dueDate.split('T')[0] : '',
+                    payment_mode: data.paymentMode || 'Cash'
+                })
+            });
+            if (!response.ok) {
+                const err = await response.json().catch(() => ({}));
+                alert(`Error adding person: ${err?.error?.message || err?.message || response.statusText}`);
+            } else {
+                const loanData = await response.json().catch(() => null);
+                if (loanData?.data?.id && Number(data.principal) > 0) {
+
+                    await apiFetch(`/api/v1/loans/${loanData.data.id}/transactions`, {
+                        method: 'POST',
+
+                        body: JSON.stringify({
+                            amount: Number(data.principal),
+                            date: new Date().toISOString().split('T')[0],
+                            mode: data.paymentMode || 'Cash',
+                            note: 'Initial Amount Given'
+                        })
+                    }).catch(() => { });
+                }
             }
-        }
-        await fetchLoans();
+            await fetchLoans();
         } catch (err) {
-            
-                console.error("Action failed:", err);
+
+            console.error("Action failed:", err);
         }
     };
 
@@ -142,42 +150,42 @@ export function AppProvider({ children }) {
         if (!localStorage.getItem("access_token")) return;
         try {
 
-        const response = await apiFetch('/api/v1/loans', {
-            method: 'POST',
-            
-            body: JSON.stringify({
-                person_name: personId,
-                purpose: data.purpose || 'Business Loan',
-                principal_amount: Number(data.principal) || 0,
-                interest_amount: Number(data.interest) || 0,
-                duration: data.duration || '',
-                due_date: data.dueDate ? data.dueDate.split('T')[0] : '',
-                payment_mode: data.paymentMode || 'Cash'
-            })
-        });
-        if (!response.ok) {
-            const err = await response.json().catch(() => ({}));
-            alert(`Error adding loan: ${err?.error?.message || err?.message || response.statusText}`);
-        } else {
-            const loanData = await response.json().catch(() => null);
-            if (loanData?.data?.id && Number(data.principal) > 0) {
-                
-                await apiFetch(`/api/v1/loans/${loanData.data.id}/transactions`, {
-                    method: 'POST',
-                    
-                    body: JSON.stringify({
-                        amount: Number(data.principal),
-                        date: new Date().toISOString().split('T')[0],
-                        mode: data.paymentMode || 'Cash',
-                        note: 'Initial Amount Given'
-                    })
-                }).catch(() => { });
+            const response = await apiFetch('/api/v1/loans', {
+                method: 'POST',
+
+                body: JSON.stringify({
+                    person_name: personId,
+                    purpose: data.purpose || 'Business Loan',
+                    principal_amount: Number(data.principal) || 0,
+                    interest_amount: Number(data.interest) || 0,
+                    duration: data.duration || '',
+                    due_date: data.dueDate ? data.dueDate.split('T')[0] : '',
+                    payment_mode: data.paymentMode || 'Cash'
+                })
+            });
+            if (!response.ok) {
+                const err = await response.json().catch(() => ({}));
+                alert(`Error adding loan: ${err?.error?.message || err?.message || response.statusText}`);
+            } else {
+                const loanData = await response.json().catch(() => null);
+                if (loanData?.data?.id && Number(data.principal) > 0) {
+
+                    await apiFetch(`/api/v1/loans/${loanData.data.id}/transactions`, {
+                        method: 'POST',
+
+                        body: JSON.stringify({
+                            amount: Number(data.principal),
+                            date: new Date().toISOString().split('T')[0],
+                            mode: data.paymentMode || 'Cash',
+                            note: 'Initial Amount Given'
+                        })
+                    }).catch(() => { });
+                }
             }
-        }
-        await fetchLoans();
+            await fetchLoans();
         } catch (err) {
-            
-                console.error("Action failed:", err);
+
+            console.error("Action failed:", err);
         }
     };
 
@@ -185,26 +193,26 @@ export function AppProvider({ children }) {
         if (!localStorage.getItem("access_token")) return;
         try {
 
-        const person = state.people.find(p => p.id === personId);
-        const loan = person?.loans.find(l => l.id === loanId);
-        const currentPrincipal = loan?.transactions?.[0]?.amount || 0;
+            const person = state.people.find(p => p.id === personId);
+            const loan = person?.loans.find(l => l.id === loanId);
+            const currentPrincipal = loan?.transactions?.[0]?.amount || 0;
 
-        await apiFetch(`/api/v1/loans/${loanId}`, {
-            method: 'PUT',
-            
-            body: JSON.stringify({
-                person_name: personId,
-                purpose: updates.purpose || loan?.purpose || '',
-                principal_amount: currentPrincipal,
-                interest_amount: updates.interest !== undefined ? Number(updates.interest) : Number(loan?.interest || 0),
-                duration: updates.duration || loan?.duration || '',
-                due_date: (updates.dueDate || loan?.dueDate || '') ? (updates.dueDate || loan?.dueDate).split('T')[0] : ''
-            })
-        });
-        await fetchLoans();
+            await apiFetch(`/api/v1/loans/${loanId}`, {
+                method: 'PUT',
+
+                body: JSON.stringify({
+                    person_name: personId,
+                    purpose: updates.purpose || loan?.purpose || '',
+                    principal_amount: currentPrincipal,
+                    interest_amount: updates.interest !== undefined ? Number(updates.interest) : Number(loan?.interest || 0),
+                    duration: updates.duration || loan?.duration || '',
+                    due_date: (updates.dueDate || loan?.dueDate || '') ? (updates.dueDate || loan?.dueDate).split('T')[0] : ''
+                })
+            });
+            await fetchLoans();
         } catch (err) {
-            
-                console.error("Action failed:", err);
+
+            console.error("Action failed:", err);
         }
     };
 
@@ -212,12 +220,13 @@ export function AppProvider({ children }) {
         if (!localStorage.getItem("access_token")) return;
         try {
 
-        await apiFetch(`/api/v1/loans/${loanId}`, {
-            method: 'DELETE' });
-        await fetchLoans();
+            await apiFetch(`/api/v1/loans/${loanId}`, {
+                method: 'DELETE'
+            });
+            await fetchLoans();
         } catch (err) {
-            
-                console.error("Action failed:", err);
+
+            console.error("Action failed:", err);
         }
     };
 
@@ -225,17 +234,18 @@ export function AppProvider({ children }) {
         if (!localStorage.getItem("access_token")) return;
         try {
 
-        const person = state.people.find(p => p.id === personId);
-        if (person) {
-            for (const loan of person.loans) {
-                await apiFetch(`/api/v1/loans/${loan.id}`, {
-                    method: 'DELETE' });
+            const person = state.people.find(p => p.id === personId);
+            if (person) {
+                for (const loan of person.loans) {
+                    await apiFetch(`/api/v1/loans/${loan.id}`, {
+                        method: 'DELETE'
+                    });
+                }
             }
-        }
-        await fetchLoans();
+            await fetchLoans();
         } catch (err) {
-            
-                console.error("Action failed:", err);
+
+            console.error("Action failed:", err);
         }
     };
 
@@ -243,28 +253,28 @@ export function AppProvider({ children }) {
         if (!localStorage.getItem("access_token")) return;
         try {
 
-        const person = state.people.find(p => p.id === oldName);
-        if (person) {
-            for (const loan of person.loans) {
-                const currentPrincipal = loan?.transactions?.[0]?.amount || 0;
-                await apiFetch(`/api/v1/loans/${loan.id}`, {
-                    method: 'PUT',
-                    
-                    body: JSON.stringify({
-                        person_name: newName,
-                        purpose: loan.purpose,
-                        principal_amount: currentPrincipal,
-                        interest_amount: loan.interest,
-                        duration: loan.duration,
-                        due_date: loan.dueDate ? loan.dueDate.split('T')[0] : ''
-                    })
-                });
+            const person = state.people.find(p => p.id === oldName);
+            if (person) {
+                for (const loan of person.loans) {
+                    const currentPrincipal = loan?.transactions?.[0]?.amount || 0;
+                    await apiFetch(`/api/v1/loans/${loan.id}`, {
+                        method: 'PUT',
+
+                        body: JSON.stringify({
+                            person_name: newName,
+                            purpose: loan.purpose,
+                            principal_amount: currentPrincipal,
+                            interest_amount: loan.interest,
+                            duration: loan.duration,
+                            due_date: loan.dueDate ? loan.dueDate.split('T')[0] : ''
+                        })
+                    });
+                }
             }
-        }
-        await fetchLoans();
+            await fetchLoans();
         } catch (err) {
-            
-                console.error("Action failed:", err);
+
+            console.error("Action failed:", err);
         }
     };
 
@@ -272,66 +282,16 @@ export function AppProvider({ children }) {
         if (!localStorage.getItem("access_token")) return;
         try {
 
-        const person = state.people.find(p => p.id === personId);
-        const loan = person?.loans.find(l => l.id === loanId);
-        const currentPrincipal = loan?.transactions?.reduce((sum, t) => sum + Number(t.amount || 0), 0) || 0;
-        const newPrincipal = currentPrincipal + (Number(data.amount) || 0);
+            const person = state.people.find(p => p.id === personId);
+            const loan = person?.loans.find(l => l.id === loanId);
+            // Only sum given (non-received) transactions toward principal
+            const givenTxns = loan?.transactions?.filter(t => t.type !== 'received') || [];
+            const currentPrincipal = givenTxns.reduce((sum, t) => sum + Number(t.amount || 0), 0);
+            const newPrincipal = currentPrincipal + (Number(data.amount) || 0);
 
-        await apiFetch(`/api/v1/loans/${loanId}`, {
-            method: 'PUT',
-            
-            body: JSON.stringify({
-                person_name: personId,
-                purpose: loan.purpose,
-                principal_amount: newPrincipal,
-                interest_amount: loan.interest,
-                duration: loan.duration,
-                due_date: loan.dueDate ? loan.dueDate.split('T')[0] : ''
-            })
-        });
-
-        await apiFetch(`/api/v1/loans/${loanId}/transactions`, {
-            method: 'POST',
-            
-            body: JSON.stringify({
-                amount: Number(data.amount) || 0,
-                date: data.date ? data.date.split('T')[0] : new Date().toISOString().split('T')[0],
-                mode: data.mode || 'Cash',
-                note: data.note || 'Installment'
-            })
-        });
-
-        await fetchLoans();
-        } catch (err) {
-            
-                console.error("Action failed:", err);
-        }
-    };
-
-    const deleteTransaction = async (personId, loanId, transactionId) => {
-        if (!localStorage.getItem("access_token")) return;
-        try {
-
-        const person = state.people.find(p => p.id === personId);
-        const loan = person?.loans.find(l => l.id === loanId);
-        if (!loan) return;
-
-        const txnToDelete = loan.transactions?.find(t => t.id === transactionId);
-        const amountToSubtract = txnToDelete && txnToDelete.note !== 'Received Payment' ? Number(txnToDelete.amount) : 0;
-
-        const currentPrincipal = loan.transactions?.reduce((sum, t) => sum + Number(t.amount || 0), 0) || 0;
-        const newPrincipal = Math.max(0, currentPrincipal - amountToSubtract);
-
-        // Try DELETE the actual transaction directly if the API supports it
-        if (!transactionId.includes('-base-prin')) {
-            await apiFetch(`/api/v1/loans/${loanId}/transactions/${transactionId}`, {
-                method: 'DELETE' }).catch(() => { });
-        }
-
-        if (amountToSubtract > 0) {
             await apiFetch(`/api/v1/loans/${loanId}`, {
                 method: 'PUT',
-                
+
                 body: JSON.stringify({
                     person_name: personId,
                     purpose: loan.purpose,
@@ -341,11 +301,67 @@ export function AppProvider({ children }) {
                     due_date: loan.dueDate ? loan.dueDate.split('T')[0] : ''
                 })
             });
-        }
-        await fetchLoans();
+
+            await apiFetch(`/api/v1/loans/${loanId}/transactions`, {
+                method: 'POST',
+
+                body: JSON.stringify({
+                    amount: Number(data.amount) || 0,
+                    date: data.date ? data.date.split('T')[0] : new Date().toISOString().split('T')[0],
+                    mode: data.mode || 'Cash',
+                    note: data.note || 'Installment'
+                })
+            });
+
+            await fetchLoans();
         } catch (err) {
-            
-                console.error("Action failed:", err);
+
+            console.error("Action failed:", err);
+        }
+    };
+
+    const deleteTransaction = async (personId, loanId, transactionId) => {
+        if (!localStorage.getItem("access_token")) return;
+        try {
+
+            const person = state.people.find(p => p.id === personId);
+            const loan = person?.loans.find(l => l.id === loanId);
+            if (!loan) return;
+
+            const txnToDelete = loan.transactions?.find(t => t.id === transactionId);
+            // Only subtract if it's a given transaction (not a received payment)
+            const amountToSubtract = txnToDelete && txnToDelete.type !== 'received' ? Number(txnToDelete.amount) : 0;
+
+            // Only sum given (non-received) transactions toward principal
+            const givenTxns = loan?.transactions?.filter(t => t.type !== 'received') || [];
+            const currentPrincipal = givenTxns.reduce((sum, t) => sum + Number(t.amount || 0), 0);
+            const newPrincipal = Math.max(0, currentPrincipal - amountToSubtract);
+
+            // Try DELETE the actual transaction directly if the API supports it
+            if (!transactionId.includes('-base-prin')) {
+                await apiFetch(`/api/v1/loans/${loanId}/transactions/${transactionId}`, {
+                    method: 'DELETE'
+                }).catch(() => { });
+            }
+
+            if (amountToSubtract > 0) {
+                await apiFetch(`/api/v1/loans/${loanId}`, {
+                    method: 'PUT',
+
+                    body: JSON.stringify({
+                        person_name: personId,
+                        purpose: loan.purpose,
+                        principal_amount: newPrincipal,
+                        interest_amount: loan.interest,
+                        duration: loan.duration,
+                        due_date: loan.dueDate ? loan.dueDate.split('T')[0] : ''
+                    })
+                });
+            }
+            await fetchLoans();
+        } catch (err) {
+
+            console.error("Action failed:", err);
         }
     };
 
@@ -353,20 +369,20 @@ export function AppProvider({ children }) {
         if (!localStorage.getItem("access_token")) return;
         try {
 
-        await apiFetch(`/api/v1/loans/${loanId}/transactions`, {
-            method: 'POST',
-            
-            body: JSON.stringify({
-                amount: amount,
-                date: date ? date.split('T')[0] : new Date().toISOString().split('T')[0],
-                mode: mode,
-                note: 'Received Payment'
-            })
-        });
-        await fetchLoans();
+            await apiFetch(`/api/v1/loans/${loanId}/transactions`, {
+                method: 'POST',
+
+                body: JSON.stringify({
+                    amount: amount,
+                    date: date ? date.split('T')[0] : new Date().toISOString().split('T')[0],
+                    mode: mode,
+                    note: 'Received Payment'
+                })
+            });
+            await fetchLoans();
         } catch (err) {
-            
-                console.error("Action failed:", err);
+
+            console.error("Action failed:", err);
         }
     };
 

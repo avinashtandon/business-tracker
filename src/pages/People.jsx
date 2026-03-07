@@ -47,7 +47,7 @@ export default function People({ onNavigate }) {
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     const handleAdd = () => {
-        if (!form.name.trim() || !form.principal) return;
+        if (!form.name.trim()) return;
         const duration = /^\d+$/.test(form.duration.trim())
             ? `${form.duration.trim()} weeks`
             : form.duration.trim() || '2 weeks';

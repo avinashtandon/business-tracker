@@ -242,22 +242,31 @@ export default function PersonDetail({ personId, onNavigate }) {
                         {/* Transaction Timeline */}
                         {sortedTxns.length > 0 && (
                             <div className="loan-txn-section">
-                                <div className="loan-txn-title">Installments given ({sortedTxns.length})</div>
+                                <div className="loan-txn-title">Timeline ({sortedTxns.length})</div>
                                 <div className="txn-timeline">
-                                    {sortedTxns.map((txn) => (
-                                        <div className="txn-timeline-item" key={txn.id}>
-                                            <div className="txn-info">
-                                                <div className="txn-amount">{formatCurrency(txn.amount)}</div>
-                                                <div className="txn-date-mode">{formatDate(txn.date)} • {txn.mode || 'Cash'}</div>
-                                                {txn.note && (
-                                                    <div className="txn-note">📝 {txn.note}</div>
+                                    {sortedTxns.map((txn) => {
+                                        const isReceived = txn.type === 'received';
+                                        return (
+                                            <div
+                                                className="txn-timeline-item"
+                                                key={txn.id}
+                                                style={isReceived ? { background: 'rgba(52,211,153,0.07)', borderLeft: '3px solid #34d399' } : {}}
+                                            >
+                                                <div className="txn-info">
+                                                    <div className="txn-amount" style={isReceived ? { color: '#34d399' } : {}}>
+                                                        {isReceived ? '💰 +' : ''}{formatCurrency(txn.amount)}
+                                                    </div>
+                                                    <div className="txn-date-mode">{formatDate(txn.date)} • {txn.mode || 'Cash'}</div>
+                                                    <div className="txn-note" style={isReceived ? { color: '#6ee7b7' } : {}}>
+                                                        {isReceived ? '✅ Received Payment' : txn.note ? `📝 ${txn.note}` : ''}
+                                                    </div>
+                                                </div>
+                                                {status !== 'Received' && !isReceived && (
+                                                    <button className="txn-delete" onClick={() => deleteTransaction(person.id, loan.id, txn.id)} title="Delete">✕</button>
                                                 )}
                                             </div>
-                                            {status !== 'Received' && (
-                                                <button className="txn-delete" onClick={() => deleteTransaction(person.id, loan.id, txn.id)} title="Delete">✕</button>
-                                            )}
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             </div>
                         )}
