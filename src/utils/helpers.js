@@ -224,6 +224,12 @@ export function setAuthToken(token) {
     }
 }
 
+// Ensure token expiry is pre-cached on hard reload immediately
+const initialToken = localStorage.getItem("access_token");
+if (initialToken) {
+    setAuthToken(initialToken);
+}
+
 function authLogout() {
     isLoggingOut = true;
     localStorage.removeItem("access_token");
@@ -238,9 +244,6 @@ function authLogout() {
 
 export async function apiFetch(url, options = {}) {
     const token = localStorage.getItem("access_token");
-
-    // Auto-parse global token expiry on hard reload
-    if (token && globalTokenExpiry === null) setAuthToken(token);
 
     if (token && globalTokenExpiry && Date.now() >= globalTokenExpiry) {
         if (!isLoggingOut) authLogout();
