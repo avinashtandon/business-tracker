@@ -7,125 +7,8 @@ import People from './pages/People';
 import PersonDetail from './pages/PersonDetail';
 import Crypto from './pages/Crypto';
 
-function ForgotPasswordScreen({ onBack }) {
-  const [email, setEmail] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!email) {
-      setError('Please enter your email.');
-      return;
-    }
-    setIsLoading(true);
-    setError('');
-    setMessage('');
-    try {
-      const res = await fetch('/api/v1/auth/forgot-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(data.message || data.error?.message || 'Failed to send reset link');
-      }
-      setMessage(data.data?.message || 'If the email exists, a reset link has been sent.');
-    } catch (err) {
-      setError(err.message || 'Something went wrong.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <div className="auth-screen">
-      <div className="auth-card">
-        <h1 className="auth-title">Reset Password</h1>
-        <p className="auth-subtitle">Enter your email to receive a reset link</p>
-        <form onSubmit={handleSubmit} className="auth-form">
-          <div className="input-group">
-            <label>Email Address</label>
-            <input className="input-field" type="email" placeholder="name@example.com" value={email} onChange={e => { setEmail(e.target.value); setError(''); setMessage(''); }} autoFocus />
-          </div>
-          {error && <p className="auth-error">{error}</p>}
-          {message && <p className="auth-success" style={{ color: '#10b981', fontSize: '0.875rem', marginBottom: '1rem', textAlign: 'center' }}>{message}</p>}
-          <button type="submit" className="btn btn-primary auth-btn" disabled={isLoading}>
-            {isLoading ? 'Sending...' : 'Send Reset Link'}
-          </button>
-        </form>
-        <div className="auth-toggle">
-          <p>
-            <button type="button" className="auth-toggle-btn" onClick={onBack}>Back to Login</button>
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ResetPasswordScreen({ token, onComplete }) {
-  const [newPassword, setNewPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (newPassword.length < 8) {
-      setError('Password must be at least 8 characters long.');
-      return;
-    }
-    setIsLoading(true);
-    setError('');
-    setMessage('');
-    try {
-      const res = await fetch('/api/v1/auth/reset-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, new_password: newPassword })
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(data.message || data.error?.message || 'Failed to reset password');
-      }
-      setMessage(data.data?.message || 'Password has been successfully reset.');
-      setTimeout(() => {
-        onComplete();
-      }, 2000);
-    } catch (err) {
-      setError(err.message || 'Something went wrong.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <div className="auth-screen">
-      <div className="auth-card">
-        <h1 className="auth-title">Set New Password</h1>
-        <p className="auth-subtitle">Enter your new password below</p>
-        <form onSubmit={handleSubmit} className="auth-form">
-          <div className="input-group">
-            <label>New Password</label>
-            <input className="input-field" type="password" placeholder="••••••••" value={newPassword} onChange={e => { setNewPassword(e.target.value); setError(''); }} autoFocus />
-          </div>
-          {error && <p className="auth-error">{error}</p>}
-          {message && <p className="auth-success" style={{ color: '#10b981', fontSize: '0.875rem', marginBottom: '1rem', textAlign: 'center' }}>{message}</p>}
-          <button type="submit" className="btn btn-primary auth-btn" disabled={isLoading}>
-            {isLoading ? 'Resetting...' : 'Reset Password'}
-          </button>
-        </form>
-      </div>
-    </div>
-  );
-}
-
 function AuthScreen({ onAuth }) {
   const [isLogin, setIsLogin] = useState(true);
-  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
@@ -134,10 +17,6 @@ function AuthScreen({ onAuth }) {
   const [error, setError] = useState('');
   const [shake, setShake] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
-  if (isForgotPassword) {
-    return <ForgotPasswordScreen onBack={() => setIsForgotPassword(false)} />;
-  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -294,10 +173,7 @@ function AuthScreen({ onAuth }) {
             />
           </div>
           <div className="input-group">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <label>Password</label>
-              {isLogin && <button type="button" onClick={() => setIsForgotPassword(true)} style={{ background: 'none', border: 'none', color: '#6366f1', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}>Forgot Password?</button>}
-            </div>
+            <label>Password</label>
             <input
               className="input-field"
               type="password"
@@ -334,16 +210,8 @@ export default function App() {
   const [page, setPage] = useState('dashboard');
   const [selectedPersonId, setSelectedPersonId] = useState(null);
   const [isMounting, setIsMounting] = useState(true);
-  const [resetToken, setResetToken] = useState(null);
 
   useEffect(() => {
-    // Check for reset token in URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
-    if (token) {
-      setResetToken(token);
-    }
-
     // Try to load user from localStorage on initial render
     const savedUser = localStorage.getItem('auth_user');
     if (savedUser) {
@@ -389,13 +257,6 @@ export default function App() {
 
   if (isMounting) {
     return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>Loading...</div>;
-  }
-
-  if (resetToken) {
-    return <ResetPasswordScreen token={resetToken} onComplete={() => {
-      setResetToken(null);
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }} />;
   }
 
   if (!user) {
