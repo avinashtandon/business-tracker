@@ -160,6 +160,27 @@ export default function PersonDetail({ personId, onNavigate }) {
                 const sortedTxns = [...loan.transactions].sort((a, b) => new Date(a.date) - new Date(b.date));
                 const loanNumber = loans.length - idx; // newest = highest number
 
+                // Calculate if payment was late
+                let daysLate = 0;
+                let finalPaymentDate = loan.dateReceived;
+
+                if (status === 'Received' && loan.dueDate && sortedTxns.length > 0) {
+                    const lastTxn = sortedTxns[sortedTxns.length - 1];
+                    finalPaymentDate = lastTxn.date;
+
+                    let due = new Date(loan.dueDate);
+                    let received = new Date(lastTxn.date);
+
+                    if (!isNaN(due.getTime()) && !isNaN(received.getTime())) {
+                        const diffTime = received.getTime() - due.getTime();
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                        if (diffDays > 0) {
+                            daysLate = diffDays;
+                        }
+                    }
+                }
+
                 return (
                     <div key={loan.id} className="loan-card">
                         {/* Loan Header */}
@@ -236,8 +257,13 @@ export default function PersonDetail({ personId, onNavigate }) {
 
                         {/* Received banner */}
                         {status === 'Received' && (
-                            <div className="loan-received-banner">
-                                <span>✅ Fully received on {formatDate(loan.dateReceived)} via {loan.receivedPaymentMode || '—'}</span>
+                            <div className="loan-received-banner" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span>✅ Fully received on {formatDate(finalPaymentDate)} via {loan.receivedPaymentMode || '—'}</span>
+                                {daysLate > 0 && (
+                                    <span style={{ color: '#f87171', fontWeight: 600, fontSize: '0.85rem', background: 'rgba(248, 113, 113, 0.15)', padding: '0.2rem 0.6rem', borderRadius: '4px' }}>
+                                        ⚠️ {daysLate} day{daysLate !== 1 ? 's' : ''} late
+                                    </span>
+                                )}
                             </div>
                         )}
 

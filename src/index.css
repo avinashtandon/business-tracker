@@ -100,6 +100,10 @@ body {
   transition: background var(--transition-base), color var(--transition-base);
 }
 
+body.modal-open {
+  overflow: hidden;
+}
+
 #root {
   display: flex;
   min-height: 100vh;
