@@ -6,7 +6,7 @@ A full-stack, dark-mode, mobile-friendly web app to track money you lend to peop
 
 ## ✨ Features
 
-### 👤 People
+### 👤 Lending
 - Add, rename, and delete people you lend money to
 - Aggregate summary per person — total lent, total to receive, total received, and profit
 
@@ -185,7 +185,7 @@ All loans are linked to the **authenticated user** via `user_id`. No data is sha
 src/
 ├── components/       # Reusable UI components (Modal, Sidebar, StatusBadge)
 ├── context/          # AppContext — global state + all API call logic
-├── pages/            # Page components (Dashboard, People, PersonDetail, Settings)
+├── pages/            # Page components (Dashboard, Lending, PersonDetail, Settings)
 ├── utils/            # helpers.js — formatCurrency, calcLoanTotals, exportData, etc.
 └── App.jsx           # Root app with routing
 ```
