@@ -35,7 +35,7 @@ export default function Sidebar({ activePage, onNavigate }) {
 
     const navItems = [
         { id: 'dashboard', icon: '📊', label: 'Dashboard' },
-        { id: 'people', icon: '👥', label: 'People' },
+        { id: 'lending', icon: '👥', label: 'Lending' },
         { id: 'crypto', icon: '₿', label: 'Crypto' },
     ];
 

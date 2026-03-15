@@ -139,6 +139,13 @@ h1 {
   font-size: 1.75rem;
 }
 
+.page-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
 h2 {
   font-size: 1.375rem;
 }

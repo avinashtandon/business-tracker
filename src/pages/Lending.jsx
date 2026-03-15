@@ -8,7 +8,7 @@ import {
 } from '../utils/helpers';
 import StatusBadge from '../components/StatusBadge';
 import Modal from '../components/Modal';
-import './People.css';
+import './Lending.css';
 
 // Determine the "worst" status across all a person's active loans
 function personOverallStatus(person) {
@@ -26,7 +26,7 @@ function personSoonestDue(person) {
     return formatDate(active[0].dueDate);
 }
 
-export default function People({ onNavigate }) {
+export default function Lending({ onNavigate }) {
     const { state, addPerson } = useApp();
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('All');
@@ -59,7 +59,7 @@ export default function People({ onNavigate }) {
     return (
         <div className="people-page">
             <div className="people-header">
-                <h1>People</h1>
+                <h1 className="page-title">Lending Portfolio</h1>
                 <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>+ Add Person</button>
             </div>
 

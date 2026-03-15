@@ -3,7 +3,7 @@ import { useApp } from './context/useApp';
 import { setAuthToken } from './utils/helpers';
 import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
-import People from './pages/People';
+import Lending from './pages/Lending';
 import PersonDetail from './pages/PersonDetail';
 import Crypto from './pages/Crypto';
 
@@ -278,8 +278,8 @@ export default function App() {
     switch (page) {
       case 'dashboard':
         return <Dashboard onNavigate={navigate} />;
-      case 'people':
-        return <People onNavigate={navigate} />;
+      case 'lending':
+        return <Lending onNavigate={navigate} />;
       case 'person':
         return <PersonDetail personId={selectedPersonId} onNavigate={navigate} />;
       case 'crypto':

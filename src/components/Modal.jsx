@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import './Modal.css';
 
 export default function Modal({ title, children, onClose, footer }) {
@@ -9,7 +10,7 @@ export default function Modal({ title, children, onClose, footer }) {
         };
     }, []);
 
-    return (
+    const modal = (
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
@@ -21,4 +22,6 @@ export default function Modal({ title, children, onClose, footer }) {
             </div>
         </div>
     );
+
+    return createPortal(modal, document.body);
 }

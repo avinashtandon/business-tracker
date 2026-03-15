@@ -236,7 +236,7 @@ export default function Crypto() {
             {/* Header */}
             <div className="crypto-header">
                 <div>
-                    <h1 className="crypto-title">Crypto Portfolio</h1>
+                    <h1 className="page-title">Crypto Portfolio</h1>
                     <p className="crypto-subtitle">Track your cryptocurrency investments</p>
                 </div>
                 <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>

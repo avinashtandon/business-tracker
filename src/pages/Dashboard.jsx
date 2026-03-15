@@ -75,7 +75,7 @@ export default function Dashboard({ onNavigate }) {
         <div className="dashboard">
             <div className="dashboard-header">
                 <div>
-                    <h1>Dashboard</h1>
+                    <h1 className="page-title">Dashboard</h1>
                     <p>Overview of your lending portfolio</p>
                 </div>
                 <button
