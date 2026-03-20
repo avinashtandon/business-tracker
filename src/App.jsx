@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard';
 import Lending from './pages/Lending';
 import PersonDetail from './pages/PersonDetail';
 import Crypto from './pages/Crypto';
+import Trade from './pages/Trade/Trade';
 
 function AuthScreen({ onAuth }) {
   const [isLogin, setIsLogin] = useState(true);
@@ -284,6 +285,8 @@ export default function App() {
         return <PersonDetail personId={selectedPersonId} onNavigate={navigate} />;
       case 'crypto':
         return <Crypto />;
+      case 'trade':
+        return <Trade />;
       default:
         return <Dashboard onNavigate={navigate} />;
     }

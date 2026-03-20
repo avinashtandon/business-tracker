@@ -1,0 +1,233 @@
+/* ═══════════════════════════════════════
+   Trade Page Styles
+═══════════════════════════════════════ */
+
+.trade-page {
+    width: 100%;
+}
+
+/* Header */
+.trade-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    gap: 1rem;
+}
+
+.trade-subtitle {
+    color: var(--text-muted);
+    font-size: 0.9375rem;
+    margin: 0;
+}
+
+/* Overview stat cards — 4 columns */
+.trade-overview {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+}
+
+.trade-stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem 2rem;
+}
+
+.trade-stat-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    margin-bottom: 0.6rem;
+}
+
+.trade-stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+/* P&L badges */
+.pnl-badge {
+    font-size: 0.9rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+.pnl-pos { color: #22c55e; }
+.pnl-neg { color: #ef4444; }
+.pnl-na {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+/* P&L bar under trade card header */
+.trade-pnl-bar {
+    display: flex;
+    align-items: center;
+    padding: 0.55rem 1.75rem;
+    font-size: 0.8125rem;
+    border-top: 1px solid var(--border-color);
+}
+.trade-pnl-bar.pnl-bar-pos {
+    background: color-mix(in srgb, #22c55e 6%, transparent);
+    color: #22c55e;
+}
+.trade-pnl-bar.pnl-bar-neg {
+    background: color-mix(in srgb, #ef4444 6%, transparent);
+    color: #ef4444;
+}
+
+/* Empty state */
+.trade-empty {
+    text-align: center;
+    padding: 5rem 2rem;
+    color: var(--text-muted);
+}
+.trade-empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, #10b981, #3b82f6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.trade-empty h2 {
+    font-size: 1.25rem;
+    color: var(--text-secondary);
+    margin: 0 0 0.5rem 0;
+}
+.trade-empty p {
+    font-size: 0.875rem;
+    margin: 0 0 1.5rem 0;
+}
+
+/* Holdings list */
+.trade-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Trade card matching crypto-coin-card */
+.trade-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: border-color 0.2s;
+}
+.trade-card:hover {
+    border-color: var(--border-hover);
+}
+
+.trade-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.5rem 1.75rem;
+    flex-wrap: wrap;
+}
+
+.trade-identity {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.trade-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.trade-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.trade-symbol {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    margin-top: 0.1rem;
+}
+
+.trade-meta {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.trade-metrics {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.trade-mini-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.trade-mini-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    margin-bottom: 0.2rem;
+}
+
+.trade-mini-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.trade-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+@media (max-width: 1100px) {
+    .trade-overview {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+@media (max-width: 900px) {
+    .trade-metrics {
+        gap: 1rem;
+    }
+}
+@media (max-width: 640px) {
+    .trade-overview {
+        grid-template-columns: 1fr 1fr;
+    }
+    .trade-card-header {
+        padding: 1rem;
+    }
+    .trade-metrics {
+        gap: 0.75rem;
+    }
+    .trade-pnl-bar {
+        padding: 0.5rem 1rem;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+    }
+}

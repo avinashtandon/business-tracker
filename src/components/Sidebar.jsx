@@ -37,6 +37,7 @@ export default function Sidebar({ activePage, onNavigate }) {
         { id: 'dashboard', icon: '📊', label: 'Dashboard' },
         { id: 'lending', icon: '👥', label: 'Lending' },
         { id: 'crypto', icon: '₿', label: 'Crypto' },
+        { id: 'trade', icon: '📈', label: 'Trade' },
     ];
 
     const handleNav = (id) => {
