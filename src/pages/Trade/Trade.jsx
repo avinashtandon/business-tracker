@@ -40,10 +40,10 @@ export default function Trade() {
         quantity: '',
         type: 'Intraday', // Intraday, Swing
         position: 'Long', // Long, Short
-        entry_price: '',
-        entry_date: new Date().toISOString().split('T')[0],
-        exit_price: '',
-        exit_date: '',
+        buying_price: '',
+        buying_date: new Date().toISOString().split('T')[0],
+        selling_price: '',
+        selling_date: '',
         status: 'Open', // Open, Closed
     };
 
@@ -58,21 +58,14 @@ export default function Trade() {
             }
             const json = await res.json();
             if (json.success) {
-                const mappedTrades = (json.data || []).map(t => ({
-                    ...t,
-                    entry_price: t.buying_price !== undefined ? t.buying_price : t.entry_price,
-                    exit_price: t.selling_price !== undefined ? t.selling_price : t.exit_price,
-                    entry_date: t.buying_date || t.entry_date,
-                    exit_date: t.selling_date || t.exit_date
-                }));
-                setTrades(mappedTrades);
+                setTrades(json.data || []);
             } else {
                 console.error('API Error:', json.error?.message || 'Failed to fetch trades');
             }
-        } catch (e) {
+        } catch (e) { 
             console.error('Failed to fetch trades:', e);
-        } finally {
-            setLoading(false);
+        } finally { 
+            setLoading(false); 
         }
     }, []);
 
@@ -82,18 +75,18 @@ export default function Trade() {
 
     const handleSaveTrade = async (isEdit) => {
         setSaving(true);
-        const { name, quantity, type, position, entry_price, entry_date, exit_price, exit_date, status } = tradeForm;
-
+        const { name, quantity, type, position, buying_price, buying_date, selling_price, selling_date, status } = tradeForm;
+        
         const payload = {
             name,
             quantity: Number(quantity),
             type,
             position,
-            buying_price: Number(entry_price),
-            buying_date: entry_date,
-            selling_price: exit_price ? Number(exit_price) : null,
-            selling_date: exit_price ? exit_date || null : null,
-            status: exit_price ? 'Closed' : 'Open',
+            buying_price: Number(buying_price),
+            buying_date,
+            selling_price: selling_price ? Number(selling_price) : null,
+            selling_date: selling_price ? selling_date || null : null,
+            status: selling_price ? 'Closed' : 'Open',
         };
 
         try {
@@ -102,7 +95,7 @@ export default function Trade() {
                 method: isEdit ? 'PUT' : 'POST',
                 body: JSON.stringify(payload),
             });
-
+            
             let json;
             try {
                 json = await res.json();
@@ -115,8 +108,8 @@ export default function Trade() {
                 setShowAddTrade(false);
                 setShowEditTrade(null);
                 setTradeForm(emptyTradeForm);
-            } else {
-                alert(json.error?.message || json.message || 'Failed to save trade');
+            } else { 
+                alert(json.error?.message || json.message || 'Failed to save trade'); 
             }
         } catch (e) {
             console.error('Error saving trade:', e);
@@ -131,16 +124,16 @@ export default function Trade() {
         setSaving(true);
         try {
             const res = await apiFetch(`${API_BASE}/${deleteTradeId}`, { method: 'DELETE' });
-
+            
             let json;
             try {
                 json = await res.json();
-            } catch (err) {
+            } catch(err) {
                 throw new Error(`Server returned ${res.status} (Not JSON). Did you implement the backend?`);
             }
 
             if (json.success) {
-                setDeleteTradeId(null);
+                setDeleteTradeId(null); 
                 await fetchTrades();
             } else {
                 alert(json.error?.message || json.message || 'Failed to delete trade');
@@ -156,26 +149,18 @@ export default function Trade() {
     // Summary Calculations
     const portfolioStats = trades.reduce((acc, t) => {
         const qty = t.quantity || 1;
-        const entry = (t.entry_price || 0) * qty;
-
-        acc.totalInvested += entry;
-
-        if (t.exit_price) {
-            const exit = t.exit_price * qty;
-            acc.totalSoldValue += exit;
-            
-            let pnl = 0;
-
-            if (t.position === 'Long') {
-                pnl = exit - entry;
-            } else {
-                pnl = entry - exit; // FIXED
-            }
-
+        const invested = (t.buying_price || 0) * qty;
+        
+        acc.totalInvested += invested;
+        
+        if (t.selling_price) {
+            const soldVal = t.selling_price * qty;
+            acc.totalSoldValue += soldVal;
+            const pnl = soldVal - invested; // Always Sold - Invested
             acc.totalPnl += pnl;
         } else {
             // Unsold
-            acc.totalSoldValue += entry; // current nominal value
+            acc.totalSoldValue += invested; // current nominal value
         }
         return acc;
     }, { totalInvested: 0, totalSoldValue: 0, totalPnl: 0 });
@@ -215,7 +200,7 @@ export default function Trade() {
                 <div className="trade-stat-card">
                     <div className="trade-stat-label">Total P&amp;L (Closed)</div>
                     <div className="trade-stat-value">
-                        {portfolioStats.totalPnl !== 0
+                        {portfolioStats.totalPnl !== 0 
                             ? <PnlBadge value={portfolioStats.totalPnl} pct={pnlPct} />
                             : <span className="pnl-na">—</span>}
                     </div>
@@ -241,23 +226,19 @@ export default function Trade() {
                         const isLong = t.position === 'Long';
                         const isIntraday = t.type === 'Intraday';
                         const qty = t.quantity || 1;
-                        const entry = t.entry_price ? t.entry_price * qty : 0;
-                        const exit = t.exit_price ? t.exit_price * qty : 0;
+                        const invested = t.buying_price ? t.buying_price * qty : 0;
+                        const soldVal = t.selling_price ? t.selling_price * qty : 0;
 
                         let pnlAmount = null;
                         let pct = null;
-                        if (t.exit_price && t.entry_price) {
-                            if (isLong) {
-                                pnlAmount = exit - entry;
-                                pct = entry > 0 ? (pnlAmount / entry) * 100 : 0;
-                            } else {
-                                pnlAmount = entry - exit; // FIXED
-                                pct = entry > 0 ? (pnlAmount / entry) * 100 : 0;
-                            }
+                        if (t.selling_price && t.buying_price) {
+                            pnlAmount = soldVal - invested; // ALWAYS Sold - Invested
+                            const baseVal = isLong ? invested : soldVal; // % based on entry price
+                            pct = baseVal > 0 ? (pnlAmount / baseVal) * 100 : 0;
                         }
 
                         const avatarColor = isLong ? '#22c55e' : '#ef4444';
-
+                        
                         return (
                             <div key={t.id} className="trade-card">
                                 <div className="trade-card-header">
@@ -270,25 +251,25 @@ export default function Trade() {
                                             <div className="trade-symbol">{t.type} • {t.position}</div>
                                         </div>
                                     </div>
-
+                                    
                                     <div className="trade-meta">
                                         <div className="trade-metrics">
                                             <div className="trade-mini-stat">
                                                 <span className="trade-mini-label">Invested</span>
-                                                <span className="trade-mini-value" style={{ color: 'var(--accent-purple)' }}>{fmtFull(entry)}</span>
+                                                <span className="trade-mini-value" style={{ color: 'var(--accent-purple)' }}>{fmtFull(invested)}</span>
                                             </div>
                                             <div className="trade-mini-stat">
                                                 <span className="trade-mini-label">Qty</span>
                                                 <span className="trade-mini-value">{qty}</span>
                                             </div>
                                             <div className="trade-mini-stat">
-                                                <span className="trade-mini-label">Entry Price</span>
-                                                <span className="trade-mini-value">{fmtFull(t.entry_price)}</span>
+                                                <span className="trade-mini-label">Buy Price</span>
+                                                <span className="trade-mini-value">{fmtFull(t.buying_price)}</span>
                                             </div>
                                             <div className="trade-mini-stat">
-                                                <span className="trade-mini-label">Exit Price</span>
+                                                <span className="trade-mini-label">Sell Price</span>
                                                 <span className="trade-mini-value" style={{ color: 'var(--accent-teal)' }}>
-                                                    {t.exit_price ? fmtFull(t.exit_price) : 'Open'}
+                                                    {t.selling_price ? fmtFull(t.selling_price) : 'Open'}
                                                 </span>
                                             </div>
                                             {pnlAmount !== null && (
@@ -306,10 +287,10 @@ export default function Trade() {
                                                     quantity: t.quantity || '',
                                                     type: t.type || 'Intraday',
                                                     position: t.position || 'Long',
-                                                    entry_price: t.entry_price || '',
-                                                    entry_date: t.entry_date ? t.entry_date.split('T')[0] : '',
-                                                    exit_price: t.exit_price || '',
-                                                    exit_date: t.exit_date ? t.exit_date.split('T')[0] : '',
+                                                    buying_price: t.buying_price || '',
+                                                    buying_date: t.buying_date ? t.buying_date.split('T')[0] : '',
+                                                    selling_price: t.selling_price || '',
+                                                    selling_date: t.selling_date ? t.selling_date.split('T')[0] : '',
                                                     status: t.status || 'Open'
                                                 });
                                                 setShowEditTrade(t);
@@ -318,10 +299,10 @@ export default function Trade() {
                                         </div>
                                     </div>
                                 </div>
-
+                                
                                 {pnlAmount !== null && (
                                     <div className={`trade-pnl-bar ${pnlAmount >= 0 ? 'pnl-bar-pos' : 'pnl-bar-neg'}`}>
-                                        <span>Exit Value: <strong>{fmtFull(exit)}</strong></span>
+                                        <span>Sold Value: <strong>{fmtFull(soldVal)}</strong></span>
                                         <span style={{ margin: '0 0.75rem', opacity: 0.4 }}>|</span>
                                         <span>P&amp;L: <strong><PnlBadge value={pnlAmount} pct={pct} /></strong></span>
                                     </div>
@@ -334,13 +315,13 @@ export default function Trade() {
 
             {/* Modal for Add or Edit */}
             {(showAddTrade || showEditTrade) && (
-                <Modal
-                    title={showEditTrade ? 'Edit Trade' : 'Add Trade Log'}
+                <Modal 
+                    title={showEditTrade ? 'Edit Trade' : 'Add Trade Log'} 
                     onClose={() => { setShowAddTrade(false); setShowEditTrade(null); }}
                     footer={
                         <>
                             <button className="btn btn-secondary" onClick={() => { setShowAddTrade(false); setShowEditTrade(null); }}>Cancel</button>
-                            <button className="btn btn-primary" onClick={() => handleSaveTrade(!!showEditTrade)} disabled={saving || !tradeForm.name || !tradeForm.entry_price}>
+                            <button className="btn btn-primary" onClick={() => handleSaveTrade(!!showEditTrade)} disabled={saving || !tradeForm.name || !tradeForm.buying_price}>
                                 {saving ? 'Saving...' : 'Save Trade'}
                             </button>
                         </>
@@ -348,17 +329,17 @@ export default function Trade() {
                 >
                     <div className="input-group">
                         <label>Asset Name (Stock / Crypto / Future & Options) *</label>
-                        <input className="input-field" type="text" placeholder="e.g. INFY, ETH, AAPL"
-                            value={tradeForm.name}
+                        <input className="input-field" type="text" placeholder="e.g. INFY, ETH, AAPL" 
+                            value={tradeForm.name} 
                             onChange={(e) => setTradeForm({ ...tradeForm, name: e.target.value.toUpperCase() })} autoFocus />
                     </div>
                     <div className="input-group">
                         <label>Quantity *</label>
-                        <input className="input-field" type="number" step="any" placeholder="e.g. 100"
-                            value={tradeForm.quantity}
+                        <input className="input-field" type="number" step="any" placeholder="e.g. 100" 
+                            value={tradeForm.quantity} 
                             onChange={(e) => setTradeForm({ ...tradeForm, quantity: e.target.value })} />
                     </div>
-
+                    
                     <div className="form-row">
                         <div className="input-group">
                             <label>Trade Type *</label>
@@ -378,28 +359,28 @@ export default function Trade() {
 
                     <div className="form-row">
                         <div className="input-group">
-                            <label>Entry Date *</label>
-                            <input className="input-field" type="date" value={tradeForm.entry_date}
-                                onChange={e => setTradeForm({ ...tradeForm, entry_date: e.target.value })} />
+                            <label>Buying Date *</label>
+                            <input className="input-field" type="date" value={tradeForm.buying_date} 
+                                onChange={e => setTradeForm({ ...tradeForm, buying_date: e.target.value })} />
                         </div>
                         <div className="input-group">
-                            <label>Entry Price *</label>
-                            <input className="input-field" type="number" step="any" placeholder="150" value={tradeForm.entry_price}
-                                onChange={e => setTradeForm({ ...tradeForm, entry_price: e.target.value })} />
+                            <label>Buy Price *</label>
+                            <input className="input-field" type="number" step="any" placeholder="150" value={tradeForm.buying_price} 
+                                onChange={e => setTradeForm({ ...tradeForm, buying_price: e.target.value })} />
                         </div>
                     </div>
-
+                    
                     <div className="form-row">
                         <div className="input-group">
-                            <label>Exit Price (Optional)</label>
-                            <input className="input-field" type="number" step="any" placeholder="155" value={tradeForm.exit_price}
-                                onChange={e => setTradeForm({ ...tradeForm, exit_price: e.target.value })} />
+                            <label>Sell Price (Optional)</label>
+                            <input className="input-field" type="number" step="any" placeholder="155" value={tradeForm.selling_price} 
+                                onChange={e => setTradeForm({ ...tradeForm, selling_price: e.target.value })} />
                             <small style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', marginTop: '0.2rem' }}>Leave blank if trade is still open.</small>
                         </div>
                         <div className="input-group">
-                            <label>Exit Date (Optional)</label>
-                            <input className="input-field" type="date" value={tradeForm.exit_date}
-                                onChange={e => setTradeForm({ ...tradeForm, exit_date: e.target.value })} />
+                            <label>Sell Date (Optional)</label>
+                            <input className="input-field" type="date" value={tradeForm.selling_date} 
+                                onChange={e => setTradeForm({ ...tradeForm, selling_date: e.target.value })} />
                         </div>
                     </div>
 
