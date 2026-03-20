@@ -58,7 +58,14 @@ export default function Trade() {
             }
             const json = await res.json();
             if (json.success) {
-                setTrades(json.data || []);
+                const mappedTrades = (json.data || []).map(t => ({
+                    ...t,
+                    entry_price: t.buying_price !== undefined ? t.buying_price : t.entry_price,
+                    exit_price: t.selling_price !== undefined ? t.selling_price : t.exit_price,
+                    entry_date: t.buying_date || t.entry_date,
+                    exit_date: t.selling_date || t.exit_date
+                }));
+                setTrades(mappedTrades);
             } else {
                 console.error('API Error:', json.error?.message || 'Failed to fetch trades');
             }
@@ -82,10 +89,10 @@ export default function Trade() {
             quantity: Number(quantity),
             type,
             position,
-            entry_price: Number(entry_price),
-            entry_date,
-            exit_price: exit_price ? Number(exit_price) : null,
-            exit_date: exit_price ? exit_date || null : null,
+            buying_price: Number(entry_price),
+            buying_date: entry_date,
+            selling_price: exit_price ? Number(exit_price) : null,
+            selling_date: exit_price ? exit_date || null : null,
             status: exit_price ? 'Closed' : 'Open',
         };
 
